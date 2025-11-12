@@ -1,0 +1,65 @@
+# === Node.js / NPM ===
+node_modules/
+npm-debug.log
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+pnpm-lock.yaml
+
+# === Environnement ===
+.env
+.env.local
+.env.*.local
+.env.production
+.env.example
+
+# === Logs ===
+logs/
+*.log
+npm-debug.log*
+
+# === Build / Dist ===
+dist/
+build/
+*.tsbuildinfo
+
+# === Docker ===
+.docker/
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# === Uploads (si versionnés par erreur) ===
+uploads/
+!uploads/.gitkeep        # ← Autorise un .gitkeep vide pour garder le dossier
+
+# === IDE / Éditeurs ===
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# === OS / Système ===
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# === Tests / Coverage ===
+coverage/
+__tests__/
+*.test.js
+*.spec.js
+
+# === Sequelize / Migrations (si tu veux ignorer les fichiers locaux) ===
+.migrations/
+.sequelizerc.local
+
+# === Cache ===
+.cache/
+.eslintcache
+.stylelintcache
+
+# === Temp ===
+tmp/
+temp/

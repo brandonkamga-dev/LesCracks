@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Favicon 💡 -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💡</text></svg>" />
+    
+    <meta name="theme-color" content="#1d4ed8" />
+    <meta name="language" content="fr, en" />
+    <meta http-equiv="Content-Language" content="fr, en" />
+    <link rel="canonical" href="https://les-cracks.vercel.app/" />
+
+    <title>LesCracks – Former • Innover • Impacter | Agence Tech Éducative Cameroun</title>
+    <meta name="description" content="L'agence tech éducative qui transforme les jeunes passionnés en professionnels accomplis. Bootcamps intensifs, workshops pratiques et accompagnement personnalisé pour réussir votre insertion dans la tech." />
+    <meta name="keywords" content="formation tech cameroun, bootcamp développement web, workshop programmation, école tech douala, formation développeur, agence éducative tech, insertion professionnelle tech, mentoring développeur, accompagnement carrière tech, formation full stack, bootcamp intensif, workshop react, formation javascript, école coding cameroun, tech education africa" />
+    <meta name="author" content="LesCracks" />
+
+    <!-- Fonts optimisés avec poids et styles -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- Open Graph (WhatsApp, Facebook, LinkedIn, Discord, Messenger) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://les-cracks.vercel.app/" />
+    <meta property="og:site_name" content="LesCracks" />
+    <meta property="og:title" content="LesCracks – Coaching pour jeunes qui veulent faire la différence" />
+    <meta property="og:description" content="LesCracks t’accompagne pour t’apprendre à te démarquer, clarifier ta trajectoire et affirmer qui tu es." />
+    <meta property="og:image" content="https://les-cracks.vercel.app/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="fr_FR" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://les-cracks.vercel.app/" />
+    <meta name="twitter:title" content="LesCracks – Coaching structurant et concret" />
+    <meta name="twitter:description" content="Coaching de haut niveau pour jeunes qui veulent structurer leur vision, lancer leurs projets et gagner en visibilité." />
+    <meta name="twitter:image" content="https://les-cracks.vercel.app/og-image.png" />
+    <meta name="twitter:site" content="@lescracks" />
+    <meta name="twitter:creator" content="@lescracks" />
+
+    <!-- Schema.org JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "LesCracks",
+      "url": "https://les-cracks.vercel.app/",
+      "logo": "https://les-cracks.vercel.app/logo.png",
+      "description": "Programme de coaching concret pour jeunes qui veulent faire la différence. Exécution, structure, impact, réseau.",
+      "sameAs": [
+        "https://www.linkedin.com/company/lescracks",
+        "https://twitter.com/lescracks",
+        "https://instagram.com/lescracks"
+      ],
+      "founder": {
+        "@type": "Person",
+        "name": "Brandoniscoding"
+      }
+    }
+    </script>
+
+    <!-- Palette bleue personnalisée et typographie conservées -->
+    <style>
+      :root {
+        --font-primary: 'Inter', system-ui, -apple-system, sans-serif;
+        --font-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+
+        /* Charte graphique LesCracks */
+        --primary-blue: #1f48ff;
+        --primary-yellow: #ffcc00;
+        --white: #ffffff;
+        --black: #000000;
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f2937;
+        --gray-900: #111827;
+
+        /* Espacements */
+        --space-xs: 0.25rem;
+        --space-sm: 0.5rem;
+        --space-md: 1rem;
+        --space-lg: 1.5rem;
+        --space-xl: 2rem;
+        --space-2xl: 3rem;
+        --space-3xl: 4rem;
+
+        /* Bords arrondis */
+        --radius-sm: 0.5rem;
+        --radius-md: 1rem;
+        --radius-lg: 1.5rem;
+        --radius-xl: 2rem;
+        --radius-2xl: 2.5rem;
+        --radius-3xl: 3rem;
+      }
+
+      body {
+        font-family: var(--font-primary);
+        font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      h1, h2, h3, h4, h5, h6 {
+        font-family: var(--font-display);
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        line-height: 1.1;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: #f1f5f9;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: linear-gradient(to bottom, var(--primary-blue), var(--primary-yellow));
+        border-radius: 4px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--primary-blue);
+      }
+
+      ::selection {
+        background-color: var(--primary-yellow);
+        color: var(--black);
+      }
+
+      *:focus-visible {
+        outline: 2px solid var(--primary-blue);
+        outline-offset: 2px;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

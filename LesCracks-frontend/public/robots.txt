@@ -1,0 +1,21 @@
+# Robots.txt pour LesCracks
+# https://lescracks.griote.org
+
+Admin-agent: *
+Allow: /
+
+# Pages importantes
+Allow: /cours
+Allow: /evenements
+Allow: /accompagnement
+Allow: /a-propos
+
+# Bloquer l'Admin (si présent)
+Disallow: /Admin
+Disallow: /api
+
+# Sitemap
+Sitemap: https://lescracks.griote.org/sitemap.xml
+
+# Crawl-delay pour éviter la surcharge
+Crawl-delay: 1
