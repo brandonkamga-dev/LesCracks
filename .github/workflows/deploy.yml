@@ -2,7 +2,7 @@ name: Deploy LesCracks
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
 
 jobs:
   deploy:
