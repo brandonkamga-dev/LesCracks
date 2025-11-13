@@ -62,7 +62,7 @@ services:
     image: mysql:8.0
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}   # ← UTILISE LA MÊME QUE DANS .env
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}   
       MYSQL_DATABASE: lescracks_db
     volumes:
       - mysql-data:/var/lib/mysql
