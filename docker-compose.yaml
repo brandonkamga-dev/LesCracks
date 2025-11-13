@@ -11,7 +11,7 @@ services:
       - "--entrypoints.websecure.address=:443"
       - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
       - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
-      - "--certificatesresolvers.letsencrypt.acme.email=admin@lescracks.com"
+      - "--certificatesresolvers.letsencrypt.acme.email=brandoniscoding4@gmail.com"
       - "--certificatesresolvers.letsencrypt.acme.storage=/acme.json"
     ports:
       - "80:80"
@@ -30,13 +30,12 @@ services:
       - ./LesCracks-backend/.env
     volumes:
       - uploads:/app/uploads
-      - logs:/app/logs
     depends_on:
       mysql:
         condition: service_healthy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.api.rule=Host(`lescracks.com`) && (PathPrefix(`/api`) || PathPrefix(`/uploads`))"
+      - "traefik.http.routers.api.rule=Host(`lescracks.griote.org`) && PathPrefix(`/api`)"
       - "traefik.http.routers.api.entrypoints=websecure"
       - "traefik.http.routers.api.tls=true"
       - "traefik.http.routers.api.tls.certresolver=letsencrypt"
@@ -51,7 +50,7 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.web.rule=Host(`lescracks.com`) && !PathPrefix(`/api`) && !PathPrefix(`/uploads`)"
+      - "traefik.http.routers.web.rule=Host(`lescracks.griote.org`) && !PathPrefix(`/api`)"
       - "traefik.http.routers.web.entrypoints=websecure"
       - "traefik.http.routers.web.tls=true"
       - "traefik.http.routers.web.tls.certresolver=letsencrypt"
@@ -63,14 +62,12 @@ services:
     image: mysql:8.0
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${DB_NAME:-lescracks_db}
-      MYSQL_USER: ${DB_USER:-lescracks_app}
-      MYSQL_PASSWORD: ${DB_USER_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}   # ← UTILISE LA MÊME QUE DANS .env
+      MYSQL_DATABASE: lescracks_db
     volumes:
       - mysql-data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD}"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -79,7 +76,6 @@ services:
 
 volumes:
   uploads:
-  logs:
   mysql-data:
   traefik-data:
 
