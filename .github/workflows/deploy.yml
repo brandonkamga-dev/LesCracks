@@ -65,7 +65,15 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /root/lescracks
-            docker compose down -v || true
+
+            # Nettoyage doux : containers seulement
+            docker compose down --remove-orphans || true
+            docker container prune -f || true
+
+            # Relance (DB + images conservées)
             docker compose up --build -d || { echo "Docker failed"; exit 1; }
+
+            # Nettoyage final
             docker image prune -f
+
             echo "Deployed at $(date)"
