@@ -8,25 +8,21 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      # 1. Checkout
       - uses: actions/checkout@v4
 
-      # 2. Setup Node + Cache pour frontend
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'npm'
           cache-dependency-path: LesCracks-frontend/package-lock.json
 
-      # 3. Build Frontend
       - name: Build Frontend
         run: |
           cd LesCracks-frontend
           npm ci
           npm run build
-          cp -r dist ../LesCracks-backend/frontend-build/   # ← CHANGÉ build → dist
+          cp -r dist ../LesCracks-backend/frontend-build/
 
-      # 4. Génère .env dans backend
       - name: Generate .env
         run: |
           cat > LesCracks-backend/.env << EOF
@@ -47,31 +43,35 @@ jobs:
           DB_DIALECT=mysql
           EOF
 
-      # 5. Deploy (rsync)
+      # Crée le dossier sur le VPS
+      - name: Create remote directory
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.COTANBO_HOST }}
+          username: root
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: mkdir -p /root/lescracks
+
+      # Déploie avec rsync
       - name: Deploy to Contabo
         uses: burnett01/rsync-deployments@7.0.1
         with:
           switches: -avzr --delete
           path: LesCracks-backend/
-          remote_path: /home/softengine/lescracks/
+          remote_path: /root/lescracks/
           remote_host: ${{ secrets.COTANBO_HOST }}
-          remote_user: ${{ secrets.COTANBO_USERNAME }}
+          remote_user: root
           remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
-          exclude: |
-            node_modules
-            .git
-            .env.example
-            __tests__
 
-      # 6. Redémarre Docker
-      - name: Restart Docker Compose
+      # Redémarre Docker
+      - name: Restart Docker
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.COTANBO_HOST }}
-          username: ${{ secrets.COTANBO_USERNAME }}
+          username: root
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /home/softengine/lescracks
+            cd /root/lescracks
             docker compose down
             docker compose up --build -d
             docker image prune -f
