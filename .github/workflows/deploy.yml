@@ -43,7 +43,6 @@ jobs:
           DB_DIALECT=mysql
           EOF
 
-      # Crée le dossier sur le VPS
       - name: Create remote directory
         uses: appleboy/ssh-action@v1
         with:
@@ -52,18 +51,16 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: mkdir -p /root/lescracks
 
-      # Déploie avec rsync
-      - name: Deploy to Contabo
+      - name: Deploy FULL repo
         uses: burnett01/rsync-deployments@7.0.1
         with:
           switches: -avzr --delete
-          path: LesCracks-backend/
-          remote_path: /root/lescracks/
+          path: ./                              # ← ENVOIE TOUT
+          remote_path: /root/lescracks/         # ← TOUT dans /root/lescracks
           remote_host: ${{ secrets.COTANBO_HOST }}
           remote_user: root
           remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      # Redémarre Docker
       - name: Restart Docker
         uses: appleboy/ssh-action@v1
         with:
