@@ -8,9 +8,11 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'npm'
@@ -21,7 +23,6 @@ jobs:
           cd LesCracks-frontend
           npm ci
           npm run build
-          cp -r dist ../LesCracks-backend/frontend-build/
 
       - name: Generate .env
         run: |
@@ -43,25 +44,17 @@ jobs:
           DB_DIALECT=mysql
           EOF
 
-      - name: Create remote directory
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.COTANBO_HOST }}
-          username: root
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: mkdir -p /root/lescracks
-
-      - name: Deploy FULL repo
+      - name: Deploy to Server
         uses: burnett01/rsync-deployments@7.0.1
         with:
           switches: -avzr --delete
-          path: ./                              # ← ENVOIE TOUT
-          remote_path: /root/lescracks/         # ← TOUT dans /root/lescracks
+          path: ./
+          remote_path: /root/lescracks/
           remote_host: ${{ secrets.COTANBO_HOST }}
           remote_user: root
           remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Restart Docker
+      - name: Start Docker
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.COTANBO_HOST }}
@@ -69,6 +62,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /root/lescracks
-            docker compose down
+            docker compose down -v || true
             docker compose up --build -d
             docker image prune -f
+            echo "Deployed at $(date)"
