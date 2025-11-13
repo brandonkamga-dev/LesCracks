@@ -24,7 +24,7 @@ jobs:
           cd LesCracks-frontend
           npm ci
           npm run build
-          cp -r build ../LesCracks-backend/frontend-build/
+          cp -r dist ../LesCracks-backend/frontend-build/   # ← CHANGÉ build → dist
 
       # 4. Génère .env dans backend
       - name: Generate .env
