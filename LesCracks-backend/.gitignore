@@ -25,7 +25,6 @@ build/
 
 # === Docker ===
 .docker/
-Dockerfile*
 docker-compose*.yml
 .dockerignore
 
