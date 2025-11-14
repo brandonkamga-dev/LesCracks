@@ -39,7 +39,7 @@ jobs:
           ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}
           DB_HOST=mysql
           DB_USER=root
-          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          DB_PASSWORD=MySqlRootPass2025!
           DB_NAME=lescracks_db
           DB_DIALECT=mysql
           EOF
