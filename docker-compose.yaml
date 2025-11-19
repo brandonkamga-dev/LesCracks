@@ -1,3 +1,4 @@
+version: '3.9'
 
 services:
   frontend:
@@ -8,10 +9,14 @@ services:
       - "443:443"
     volumes:
       - ./certs:/etc/letsencrypt
-      - ./LesCracks-frontend/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./LesCracks-frontend/nginx-conf:/etc/nginx/conf.d
+    depends_on:
+      - backend
     networks:
       - app-net
-
+    environment:
+      # Variable pour permettre à nginx.conf de détecter si certs existent
+      USE_SSL: "true"
 
   backend:
     build: ./LesCracks-backend
@@ -32,7 +37,6 @@ services:
       retries: 3
     networks:
       - app-net
-
 
   mysql:
     image: mysql:8.0
