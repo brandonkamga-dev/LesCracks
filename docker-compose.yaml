@@ -5,18 +5,11 @@ services:
     build: ./LesCracks-frontend
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./certs:/etc/letsencrypt
-      - ./LesCracks-frontend/nginx-conf:/etc/nginx/conf.d
+      - "3000:80"  # Nginx sur le serveur pointera vers 127.0.0.1:3000
     depends_on:
       - backend
     networks:
       - app-net
-    environment:
-      # Variable pour permettre à nginx.conf de détecter si certs existent
-      USE_SSL: "true"
 
   backend:
     build: ./LesCracks-backend
@@ -25,16 +18,8 @@ services:
       - ./LesCracks-backend/.env
     volumes:
       - uploads:/app/uploads
-    depends_on:
-      mysql:
-        condition: service_healthy
     ports:
       - "5000:5000"
-    healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:5000/api/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
     networks:
       - app-net
 
@@ -46,23 +31,6 @@ services:
       MYSQL_DATABASE: lescracks_db
     volumes:
       - mysql-data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD}"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-    networks:
-      - app-net
-
-  certbot:
-    image: certbot/certbot
-    container_name: certbot
-    restart: unless-stopped
-    volumes:
-      - ./certs:/etc/letsencrypt
-      - ./webroot:/var/www/certbot
-    entrypoint: >
-      sh -c "trap exit TERM; while :; do sleep 12h & wait $${!}; certbot renew --webroot -w /var/www/certbot; done"
     networks:
       - app-net
 
