@@ -23,8 +23,14 @@ services:
         condition: service_healthy
     ports:
       - "5000:5000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
     networks:
       - app-net
+
 
   mysql:
     image: mysql:8.0
