@@ -1,34 +1,16 @@
+version: '3.9'
 
 services:
-  traefik:
-    image: traefik:v3.0
-    entrypoint:
-      - /bin/sh
-      - -c
-      - |
-        # Crée acme.json avec les bonnes permissions avant le lancement
-        touch /acme.json
-        chmod 600 /acme.json
-        exec traefik
-    command:
-      - "--api.insecure=false"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
-      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
-      - "--certificatesresolvers.letsencrypt.acme.email=brandoniscoding4@gmail.com"
-      - "--certificatesresolvers.letsencrypt.acme.storage=/acme.json"
+  frontend:
+    build: ./LesCracks-frontend
+    restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
+      - "80:80"      # HTTP pour challenge ACME
+      - "443:443"    # HTTPS
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - traefik-data:/acme.json
+      - ./certs:/etc/letsencrypt
     networks:
       - app-net
-    restart: unless-stopped
 
   backend:
     build: ./LesCracks-backend
@@ -40,30 +22,8 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.api.rule=Host(`lescracks.griote.org`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.api.entrypoints=websecure"
-      - "traefik.http.routers.api.tls=true"
-      - "traefik.http.routers.api.tls.certresolver=letsencrypt"
-      - "traefik.http.services.api.loadbalancer.server.port=5000"
-      - "traefik.http.middlewares.strip-api.stripprefix.prefixes=/api"
-      - "traefik.http.routers.api.middlewares=strip-api"
-    networks:
-      - app-net
-
-  frontend:
-    build: ./LesCracks-frontend
-    restart: unless-stopped
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.web.rule=Host(`lescracks.griote.org`) && !PathPrefix(`/api`)"
-      - "traefik.http.routers.web.entrypoints=websecure"
-      - "traefik.http.routers.web.tls=true"
-      - "traefik.http.routers.web.tls.certresolver=letsencrypt"
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
-      - "traefik.http.routers.web.middlewares=redirect-to-https"
-      - "traefik.http.services.web.loadbalancer.server.port=80"
+    ports:
+      - "5000:5000"
     networks:
       - app-net
 
@@ -71,7 +31,7 @@ services:
     image: mysql:8.0
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}   
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       MYSQL_DATABASE: lescracks_db
     volumes:
       - mysql-data:/var/lib/mysql
@@ -83,10 +43,21 @@ services:
     networks:
       - app-net
 
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    restart: unless-stopped
+    volumes:
+      - ./certs:/etc/letsencrypt
+      - ./webroot:/var/www/certbot
+    entrypoint: >
+      sh -c "trap exit TERM; while :; do sleep 12h & wait $${!}; certbot renew --webroot -w /var/www/certbot; done"
+    networks:
+      - app-net
+
 volumes:
   uploads:
   mysql-data:
-  traefik-data:
 
 networks:
   app-net:
