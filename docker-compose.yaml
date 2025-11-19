@@ -1,12 +1,11 @@
-version: '3.9'
 
 services:
   frontend:
     build: ./LesCracks-frontend
     restart: unless-stopped
     ports:
-      - "80:80"      # HTTP pour challenge ACME
-      - "443:443"    # HTTPS
+      - "80:80"
+      - "443:443"
     volumes:
       - ./certs:/etc/letsencrypt
     networks:
