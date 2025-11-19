@@ -4,7 +4,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
-RUN npm run dist  # /dist or /build depending on React/Vite
+RUN npm run build  # /dist or /build depending on React/Vite
 
 # === PRODUCTION STAGE ===
 FROM nginx:alpine
