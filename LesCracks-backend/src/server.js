@@ -1,4 +1,5 @@
 // src/server.js
+
 require('dotenv').config();
 const fs = require('fs');
 const { sequelize } = require('./models');
