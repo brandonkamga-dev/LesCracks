@@ -47,4 +47,4 @@ jobs:
 
             docker image prune -af
 
-            echo "Déployé avec succès le $(date)"
+            echo " Déployé avec succès le $(date)"
