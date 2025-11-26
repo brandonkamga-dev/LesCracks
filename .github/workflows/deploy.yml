@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Générer le .env
+      - name: Générer .env
         run: |
           cat > LesCracks-backend/.env << 'EOF'
           NODE_ENV=production
@@ -32,17 +32,16 @@ jobs:
           MYSQL_ROOT_PASSWORD=${{ secrets.DB_PASSWORD }}
           EOF
 
-      - name: Déployer en root – BON CHEMIN
+      - name: Déployer en root
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.COTANBO_HOST }}
           username: root
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /root/lescracks/lescracks   # ← LE BON CHEMIN !
-            git pull origin master
-            cp LesCracks-backend/.env LesCracks-backend/.env 2>/dev/null || true
+            cd /root/lescracks
+            git pull origin master || git reset --hard origin/master
             docker compose down --remove-orphans --volumes
             docker compose up --build -d
             docker image prune -af
-            echo "DÉPLOIEMENT RÉUSSI – $(date)"
+            echo "DÉPLOIEMENT 100% RÉUSSI – $(date)"
