@@ -2,12 +2,19 @@ version: '3.9'
 
 services:
   frontend:
-    build: ./LesCracks-frontend
+    build:
+      context: ./LesCracks-frontend
+      # Vite charge automatiquement .env + .env.production quand NODE_ENV=production
+      args:
+        - NODE_ENV=production
     restart: unless-stopped
     ports:
-      - "3000:80"  # Nginx sur le serveur pointera vers 127.0.0.1:3000
+      - "80:80"                     # Direct sur le port 80 → plus de :3000
+    environment:
+      - NODE_ENV=production         # Important : déclenche le chargement de .env.production
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     networks:
       - app-net
 
@@ -15,11 +22,18 @@ services:
     build: ./LesCracks-backend
     restart: unless-stopped
     env_file:
-      - ./LesCracks-backend/.env
+      - .env.production             # On charge UN SEUL fichier à la racine → clair et propre
     volumes:
       - uploads:/app/uploads
-    ports:
-      - "5000:5000"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    depends_on:
+      mysql:
+        condition: service_healthy
     networks:
       - app-net
 
@@ -31,6 +45,12 @@ services:
       MYSQL_DATABASE: lescracks_db
     volumes:
       - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     networks:
       - app-net
 

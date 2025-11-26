@@ -1,3 +1,4 @@
+# .github/workflows/deploy.yml
 name: Deploy LesCracks
 
 on:
@@ -8,56 +9,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: LesCracks-frontend/package-lock.json
-
-      - name: Build Frontend
-        run: |
-          cd LesCracks-frontend
-          npm ci
-          npm run build
-
-      - name: Generate .env files
-        run: |
-          cat > LesCracks-backend/.env << 'EOF'
-          NODE_ENV=production
-          PORT=5000
-          FRONTEND_URL=https://lescracks.griote.org
-          JWT_SECRET=${{ secrets.JWT_SECRET }}
-          JWT_EXPIRES_IN=7d
-          UPLOAD_DIR=/app/uploads
-          MAX_FILE_SIZE=10485760
-          ALLOW_ADMIN_REGISTRATION=false
-          ADMIN_EMAIL=admin@lescracks.com
-          ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}
-          DB_HOST=mysql
-          DB_USER=root
-          DB_PASSWORD=MySqlRootPass2025!
-          DB_NAME=lescracks_db
-          DB_DIALECT=mysql
-          EOF
-
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" > .env
-
-      - name: Deploy to Server
-        uses: burnett01/rsync-deployments@7.0.1
-        with:
-          switches: -avzr --delete
-          path: ./
-          remote_path: /root/lescracks/
-          remote_host: ${{ secrets.COTANBO_HOST }}
-          remote_user: root
-          remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      - name: Restart Docker
-        if: success()
+      - name: Déploiement sur le serveur
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.COTANBO_HOST }}
@@ -65,15 +17,12 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /root/lescracks
-
-            # Nettoyage doux : containers seulement
+            
+            git pull origin master
+            
             docker compose down --remove-orphans || true
-            docker container prune -f || true
-
-            # Relance (DB + images conservées)
-            docker compose up --build -d || { echo "Docker failed"; exit 1; }
-
-            # Nettoyage final
+            docker compose up --build -d
+            
             docker image prune -f
-
-            echo "Deployed at $(date)"
+            
+            echo "Déployé avec succès ! $(date)"
