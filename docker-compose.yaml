@@ -3,7 +3,7 @@ services:
     build: ./LesCracks-frontend
     restart: unless-stopped
     ports:
-      - "80:80"                  # ← port 80 en local (comme en prod)
+      - "80:80"
     depends_on:
       backend:
         condition: service_healthy
@@ -17,7 +17,6 @@ services:
       - ./LesCracks-backend/.env
     volumes:
       - uploads:/app/uploads
-    # ← AUCUN PORT EXPOSÉ → caché à 100 %
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:5000/api/health"]
       interval: 30s
