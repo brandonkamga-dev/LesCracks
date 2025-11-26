@@ -1,3 +1,4 @@
+# .github/workflows/deploy.yml
 name: Deploy LesCracks
 
 on:
@@ -36,15 +37,12 @@ jobs:
         with:
           host: ${{ secrets.COTANBO_HOST }}
           username: deploy
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}   # ← la clé de l'utilisateur deploy
+          port: 22
           script: |
             cd /home/deploy/lescracks
-
             git pull origin master
-
             docker compose down --remove-orphans --volumes
             docker compose up --build -d
-
             docker image prune -af
-
-            echo " Déployé avec succès le $(date)"
+            echo "Déployé avec succès le $(date)"
