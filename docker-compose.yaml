@@ -1,17 +1,9 @@
-version: '3.9'
-
 services:
   frontend:
-    build:
-      context: ./LesCracks-frontend
-      # Vite charge automatiquement .env + .env.production quand NODE_ENV=production
-      args:
-        - NODE_ENV=production
+    build: ./LesCracks-frontend
     restart: unless-stopped
     ports:
-      - "80:80"                     # Direct sur le port 80 → plus de :3000
-    environment:
-      - NODE_ENV=production         # Important : déclenche le chargement de .env.production
+      - "80:80"
     depends_on:
       backend:
         condition: service_healthy
@@ -22,11 +14,11 @@ services:
     build: ./LesCracks-backend
     restart: unless-stopped
     env_file:
-      - .env.production             # On charge UN SEUL fichier à la racine → clair et propre
+      - ./LesCracks-backend/.env
     volumes:
       - uploads:/app/uploads
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:5000/health"]
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:5000/api/health"]
       interval: 30s
       timeout: 5s
       retries: 5
@@ -40,8 +32,10 @@ services:
   mysql:
     image: mysql:8.0
     restart: unless-stopped
+    env_file:
+      - ./LesCracks-backend/.env
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      # MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}  
       MYSQL_DATABASE: lescracks_db
     volumes:
       - mysql-data:/var/lib/mysql
@@ -50,7 +44,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 30s
     networks:
       - app-net
 
@@ -60,4 +53,3 @@ volumes:
 
 networks:
   app-net:
-    driver: bridge
