@@ -9,12 +9,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+        uses: actions/checkout@v4                # v4 en 2025
 
-      # 1. Génère le .env sur le runner (sécurisé)
-      - name: Create .env file
+      # 1. Crée le .env à la RACINE (pour MySQL en a besoin )
+      - name: Create root .env (for MySQL)
+        run: |
+          cat > .env << EOF
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          DB_NAME=lescracks_db
+          MYSQL_ROOT_PASSWORD=${{ secrets.DB_PASSWORD }}
+          EOF
+
+      # 2. Crée le .env complet dans le backend (celui qu’utilise ton Node.js)
+      - name: Create backend .env
         run: |
           cat > LesCracks-backend/.env << EOF
           NODE_ENV=production
@@ -35,8 +42,8 @@ jobs:
           MYSQL_ROOT_PASSWORD=${{ secrets.DB_PASSWORD }}
           EOF
 
-      # 2. Rsync ultra rapide : on envoie seulement ce qui a changé
-      - name: Deploy via rsync (no git pull
+      # 3. Rsync tout (les deux .env sont envoyés)
+      - name: Deploy via rsync
         uses: burnett01/rsync-deployments@7.0.1
         with:
           switches: -avzr --delete --exclude='.git' --exclude='node_modules'
@@ -46,7 +53,7 @@ jobs:
           remote_user: root
           remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      # 3. Redémarre les containers sur le serveur (une seule commande)
+      # 4. Redémarre proprement sur le serveur
       - name: Restart Docker Compose
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -55,7 +62,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /root/lescracks
-            docker compose down --remove-orphans
-            docker compose up --build -d
+            docker compose down --remove-orphans -v   # -v pour être sûr que MySQL repart propre
+            docker compose up -d --build
             docker image prune -af
-            echo "DÉPLOIEMENT RÉUSSI LE $(date)"
+            echo "DÉPLOIEMENT 100% RÉUSSI – $(date)"
