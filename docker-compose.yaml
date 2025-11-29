@@ -67,9 +67,11 @@ services:
   mysql:
     image: mysql:8.0
     restart: unless-stopped
+    env_file:
+      - ./LesCracks-backend/.env
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
-      MYSQL_DATABASE: lescracks_db
+      MYSQL_DATABASE: ${DB_NAME}
     volumes:
       - mysql-data:/var/lib/mysql
     healthcheck:
