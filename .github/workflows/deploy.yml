@@ -1,4 +1,3 @@
-# .github/workflows/deploy.yml
 name: Deploy LesCracks
 
 on:
@@ -9,11 +8,15 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-      - name: Générer .env
+      # 1. Génère le .env sur le runner (sécurisé)
+      - name: Create .env file
         run: |
-          cat > LesCracks-backend/.env << 'EOF'
+          cat > LesCracks-backend/.env << EOF
           NODE_ENV=production
           PORT=5000
           FRONTEND_URL=https://lescracks.griote.org
@@ -32,16 +35,27 @@ jobs:
           MYSQL_ROOT_PASSWORD=${{ secrets.DB_PASSWORD }}
           EOF
 
-      - name: Déployer en root
-        uses: appleboy/ssh-action@v1
+      # 2. Rsync ultra rapide : on envoie seulement ce qui a changé
+      - name: Deploy via rsync (no git pull
+        uses: burnett01/rsync-deployments@7.0.1
+        with:
+          switches: -avzr --delete --exclude='.git' --exclude='node_modules'
+          path: .
+          remote_path: /root/lescracks/
+          remote_host: ${{ secrets.COTANBO_HOST }}
+          remote_user: root
+          remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      # 3. Redémarre les containers sur le serveur (une seule commande)
+      - name: Restart Docker Compose
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.COTANBO_HOST }}
           username: root
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /root/lescracks
-            git pull origin master || git reset --hard origin/master
-            docker compose down --remove-orphans --volumes
+            docker compose down --remove-orphans
             docker compose up --build -d
             docker image prune -af
-            echo "DÉPLOIEMENT 100% RÉUSSI – $(date)"
+            echo "DÉPLOIEMENT RÉUSSI LE $(date)"

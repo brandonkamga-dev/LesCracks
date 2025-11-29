@@ -1,12 +1,41 @@
+version: "3.9"
+
 services:
-  frontend:
-    build: ./LesCracks-frontend
+  traefik:
+    image: traefik:v3.1
+    container_name: traefik
     restart: unless-stopped
     ports:
       - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik-data:/letsencrypt
+    command:
+      - --api.insecure=false
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.redirections.entryPoint.to=websecure
+      - --entrypoints.web.http.redirections.entryPoint.scheme=https
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.le.acme.tlschallenge=true
+      - --certificatesresolvers.le.acme.email=ton-email@gmail.com
+      - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json
+    networks:
+      - app-net
+
+  frontend:
+    build: ./LesCracks-frontend
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`lescracks.griote.org`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=le"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
     depends_on:
-      backend:
-        condition: service_healthy
+      - backend
     networks:
       - app-net
 
@@ -17,6 +46,12 @@ services:
       - ./LesCracks-backend/.env
     volumes:
       - uploads:/app/uploads
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`api.lescracks.griote.org`)"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.tls.certresolver=le"
+      - "traefik.http.services.backend.loadbalancer.server.port=5000"
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:5000/api/health"]
       interval: 30s
@@ -32,14 +67,13 @@ services:
   mysql:
     image: mysql:8.0
     restart: unless-stopped
-    env_file:
-      - ./LesCracks-backend/.env
     environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       MYSQL_DATABASE: lescracks_db
     volumes:
       - mysql-data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD}"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -49,6 +83,8 @@ services:
 volumes:
   uploads:
   mysql-data:
+  traefik-data:
 
 networks:
   app-net:
+    driver: bridge
