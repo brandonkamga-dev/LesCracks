@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Play, ExternalLink, Search, X, Filter, Eye, Clock, Tag, ChevronDown, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import WhatsAppIcon from '../components/icons/WhatsAppIcon';
-import { useTheme } from '../contexts/ThemeContext';
 import { publicApi } from '../services/publicApi';
 
 interface Course {
@@ -18,7 +17,6 @@ interface Course {
 }
 
 const Courses: React.FC = () => {
-  const { isDark } = useTheme();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);

@@ -2,10 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { User, CheckCircle, ArrowRight, Clock, Target, Award } from 'lucide-react';
 import WhatsAppIcon from '../components/icons/WhatsAppIcon';
-import { useTheme } from '../contexts/ThemeContext';
 
 const Accompagnement: React.FC = () => {
-  const { isDark } = useTheme();
 
   const accompagnementInfo = {
     title: 'Accompagnement Sur Mesure',

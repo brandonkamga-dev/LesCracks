@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Clock, MapPin, X, ArrowRight, Tag as TagIcon, Search, Filter, ChevronDown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import WhatsAppIcon from '../components/icons/WhatsAppIcon';
-import { useTheme } from '../contexts/ThemeContext';
 import { publicApi } from '../services/publicApi';
 
 interface Event {
@@ -20,7 +19,6 @@ interface Event {
 }
 
 const Events: React.FC = () => {
-  const { isDark } = useTheme();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);

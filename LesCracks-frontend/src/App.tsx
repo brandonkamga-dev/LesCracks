@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ThemeProvider } from './contexts/ThemeContext';
-import Navigation from './components/Navigation';
-import Footer from './components/Footer';
+import Navigation from './components/layout/Navigation';
+import Footer from './components/layout/Footer';
 import GlobalLoader from './components/common/GlobalLoader';
 import Home from './pages/Home';
 import Courses from './pages/Courses';
@@ -60,7 +59,6 @@ function App() {
   }, []);
 
   return (
-    <ThemeProvider>
       <Router>
         <GlobalLoader 
           isLoading={isLoading} 
@@ -73,7 +71,6 @@ function App() {
           </div>
         )}
       </Router>
-    </ThemeProvider>
   );
 }
 

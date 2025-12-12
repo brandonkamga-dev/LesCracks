@@ -3,10 +3,8 @@ import { motion } from 'framer-motion';
 import { Award, Target, TrendingUp, ArrowRight, Code, Globe, Rocket, Heart, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import WhatsAppIcon from '../components/icons/WhatsAppIcon';
-import { useTheme } from '../contexts/ThemeContext';
 
 const About: React.FC = () => {
-  const { isDark } = useTheme();
 
   const pillars = [
     {

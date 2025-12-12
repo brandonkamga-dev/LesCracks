@@ -1,12 +1,10 @@
 import React, { useEffect, useRef } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
 
-interface AnimatedGridProps {
+interface GridProps {
   className?: string;
 }
 
-const AnimatedGrid: React.FC<AnimatedGridProps> = ({ className = '' }) => {
-  const { isDark } = useTheme();
+const Grid: React.FC<GridProps> = ({ className = '' }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -16,27 +14,25 @@ const AnimatedGrid: React.FC<AnimatedGridProps> = ({ className = '' }) => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Set canvas size
     const updateSize = () => {
-      canvas.width = canvas.offsetWidth * window.devicePixelRatio;
-      canvas.height = canvas.offsetHeight * window.devicePixelRatio;
-      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      const ratio = window.devicePixelRatio || 1;
+      canvas.width = canvas.offsetWidth * ratio;
+      canvas.height = canvas.offsetHeight * ratio;
+      ctx.scale(ratio, ratio);
     };
+
     updateSize();
     window.addEventListener('resize', updateSize);
 
-    // Grid properties
     const gridSize = 40;
 
-    // Draw static grid (no animation needed)
     const drawGrid = () => {
       ctx.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
 
-      // Draw grid lines - Plus visibles
-      ctx.strokeStyle = isDark ? 'rgba(31, 72, 255, 0.15)' : 'rgba(31, 72, 255, 0.1)';
+      // Couleur fixe (bleu très léger)
+      ctx.strokeStyle = 'rgba(31, 72, 255, 0.1)';
       ctx.lineWidth = 1;
 
-      // Vertical lines
       for (let x = 0; x < canvas.offsetWidth; x += gridSize) {
         ctx.beginPath();
         ctx.moveTo(x, 0);
@@ -44,7 +40,6 @@ const AnimatedGrid: React.FC<AnimatedGridProps> = ({ className = '' }) => {
         ctx.stroke();
       }
 
-      // Horizontal lines
       for (let y = 0; y < canvas.offsetHeight; y += gridSize) {
         ctx.beginPath();
         ctx.moveTo(0, y);
@@ -58,7 +53,7 @@ const AnimatedGrid: React.FC<AnimatedGridProps> = ({ className = '' }) => {
     return () => {
       window.removeEventListener('resize', updateSize);
     };
-  }, [isDark]);
+  }, []);
 
   return (
     <canvas
@@ -69,4 +64,4 @@ const AnimatedGrid: React.FC<AnimatedGridProps> = ({ className = '' }) => {
   );
 };
 
-export default AnimatedGrid;
+export default Grid;
