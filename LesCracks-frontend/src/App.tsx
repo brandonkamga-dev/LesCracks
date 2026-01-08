@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ThemeProvider } from './contexts/ThemeContext';
-import Navigation from './components/Navigation';
-import Footer from './components/Footer';
+import Navigation from './components/layout/Navigation';
+import Footer from './components/layout/Footer';
 import GlobalLoader from './components/common/GlobalLoader';
+import { ThemeProvider } from './contexts/ThemeContext';
 import Home from './pages/Home';
-import Courses from './pages/Courses';
-import Events from './pages/Events';
 import About from './pages/About';
 import Accompagnement from './pages/Accompagnement';
 import AdminLogin from './pages/AdminLogin';
 import AdminRoutes from './pages/admin';
+import ComingSoon from './pages/ComingSoon';
+import NotFound from './pages/NotFound';
 
 function AppContent() {
   const location = useLocation();
@@ -33,12 +33,14 @@ function AppContent() {
       >
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/courses" element={<Courses />} />
-          <Route path="/events" element={<Events />} />
-          <Route path="/about" element={<About />} />
+          <Route path="/a-propos" element={<About />} />
           <Route path="/accompagnement" element={<Accompagnement />} />
+          <Route path="/ressources" element={<ComingSoon />} />
+          <Route path="/ressources/*" element={<ComingSoon />} />
+          <Route path="/evenements" element={<ComingSoon />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/*" element={<AdminRoutes />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </motion.main>
 
@@ -60,20 +62,20 @@ function App() {
   }, []);
 
   return (
-    <ThemeProvider>
-      <Router>
-        <GlobalLoader 
-          isLoading={isLoading} 
-          message="Chargement de LesCracks..." 
-        />
-        
-        {!isLoading && (
-          <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
-            <AppContent />
-          </div>
-        )}
-      </Router>
-    </ThemeProvider>
+      <ThemeProvider>
+        <Router>
+          <GlobalLoader
+            isLoading={isLoading}
+            message="Chargement de LesCracks..."
+          />
+          
+          {!isLoading && (
+            <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
+              <AppContent />
+            </div>
+          )}
+        </Router>
+      </ThemeProvider>
   );
 }
 

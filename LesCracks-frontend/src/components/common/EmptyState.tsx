@@ -18,7 +18,6 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   actionText, 
   onAction 
 }) => {
-  const { isDark } = useTheme();
 
   return (
     <motion.div

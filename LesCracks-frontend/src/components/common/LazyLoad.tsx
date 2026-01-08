@@ -8,7 +8,6 @@ interface LazyLoadProps {
 }
 
 const DefaultLoader: React.FC = () => {
-  const { isDark } = useTheme();
   
   return (
     <div className="flex items-center justify-center min-h-[200px]">

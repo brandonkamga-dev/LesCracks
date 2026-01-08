@@ -44,12 +44,6 @@ module.exports = (sequelize, DataTypes) => {
   };
 
   Admin.associate = function(models) {
-    Admin.belongsToMany(models.Course, {
-      through: models.Admin_Course,
-      foreignKey: 'id_admin',
-      otherKey: 'id_course',
-      as: 'courses'
-    });
     Admin.belongsToMany(models.Event, {
       through: models.Admin_Event,
       foreignKey: 'id_admin',

@@ -8,6 +8,7 @@ import AdminCourses from './AdminCourses';
 import AdminEvents from './AdminEvents';
 import AdminTags from './AdminTag';
 import AdminCategories from './AdminCategories';
+import AdminDocuments from './AdminDocuments';
 
 const AdminRoutes: React.FC = () => {
   return (
@@ -20,6 +21,7 @@ const AdminRoutes: React.FC = () => {
           <Route path="/events/*" element={<AdminEvents />} />
           <Route path="/tags" element={<AdminTags />} />
           <Route path="/categories" element={<AdminCategories />} />
+          <Route path="/documents" element={<AdminDocuments />} />
         </Routes>
       </AdminLayout>
     </ProtectedRoute>

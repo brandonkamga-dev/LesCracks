@@ -100,6 +100,30 @@ class PublicApiService {
   async getTag(id: number) {
     return this.request(`/tags/${id}`);
   }
+
+  // === DOCUMENTS ===
+  async getDocuments(filters?: { category?: number; tag?: number; search?: string }) {
+    const params = new URLSearchParams();
+    if (filters?.category) params.append('category', filters.category.toString());
+    if (filters?.tag) params.append('tag', filters.tag.toString());
+    if (filters?.search) params.append('search', filters.search);
+
+    const url = `/documents${params.toString() ? `?${params.toString()}` : ''}`;
+    return this.request<{ success: true; data: { documents: any[] } }>(url);
+  }
+
+  // === VIDEOCOURSES ===
+  async getVideoCourses(filters?: { category?: number; tag?: number; search?: string; page?: number; limit?: number }) {
+    const params = new URLSearchParams();
+    if (filters?.category) params.append('category', filters.category.toString());
+    if (filters?.tag) params.append('tag', filters.tag.toString());
+    if (filters?.search) params.append('search', filters.search);
+    if (filters?.page) params.append('page', filters.page.toString());
+    if (filters?.limit) params.append('limit', filters.limit.toString());
+
+    const url = `/videoCourses${params.toString() ? `?${params.toString()}` : ''}`;
+    return this.request<{ success: true; data: any[]; pagination: { total: number; page: number; limit: number; pages: number } }>(url);
+  }
 }
 
 // Export singleton

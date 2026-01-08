@@ -26,7 +26,6 @@ interface EventCardProps {
 }
 
 const EventCard: React.FC<EventCardProps> = ({ event, index, onAnalytics }) => {
-  const { isDark } = useTheme();
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
 
   const handleRegistration = () => {

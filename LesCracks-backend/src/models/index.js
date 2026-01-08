@@ -16,12 +16,13 @@ const Admin = require('./Admin')(sequelize, DataTypes);
 const Category = require('./Category')(sequelize, DataTypes);
 const Tag = require('./Tag')(sequelize, DataTypes);
 const Image = require('./Image')(sequelize, DataTypes);
-const Course = require('./Course')(sequelize, DataTypes);
 const Event = require('./Event')(sequelize, DataTypes);
-const Admin_Course = require('./Admin_Course')(sequelize, DataTypes);
 const Admin_Event = require('./Admin_Event')(sequelize, DataTypes);
-const Course_Tag = require('./Course_Tag')(sequelize, DataTypes);
 const Event_Tag = require('./Event_Tag')(sequelize, DataTypes);
+const Document = require('./Document')(sequelize, DataTypes);
+const VideoCourse = require('./VideoCourse')(sequelize, DataTypes);
+const VideoCourseCategory = require('./VideoCourseCategory')(sequelize, DataTypes);
+const VideoCourseTag = require('./VideoCourseTag')(sequelize, DataTypes);
 
 // Rassemble tous les modèles dans un objet central
 const db = {
@@ -31,12 +32,13 @@ const db = {
   Category,
   Tag,
   Image,
-  Course,
   Event,
-  Admin_Course,
   Admin_Event,
-  Course_Tag,
-  Event_Tag
+  Event_Tag,
+  Document,
+  VideoCourse,
+  VideoCourseCategory,
+  VideoCourseTag
 };
 
 // Configuration des associations (relations entre modèles)
