@@ -22,7 +22,6 @@ interface CourseCardProps {
 }
 
 const CourseCard: React.FC<CourseCardProps> = ({ course, index, onAnalytics }) => {
-  const { isDark } = useTheme();
 
   const handleClick = async () => {
     // Tracker le clic sur l'API

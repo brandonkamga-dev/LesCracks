@@ -17,7 +17,7 @@ async function initializeDatabase() {
     console.log('Database connection established successfully');
 
     if (process.env.NODE_ENV !== 'production') {
-      await sequelize.sync({ alter: false });
+      await sequelize.sync({ alter: true });
       console.log('Models synchronized with database');
     }
 

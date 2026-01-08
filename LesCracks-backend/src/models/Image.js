@@ -38,7 +38,8 @@ module.exports = (sequelize, DataTypes) => {
   });
 
   Image.associate = function(models) {
-    Image.hasMany(models.Course, { foreignKey: 'id_image', as: 'courses' });
+    Image.hasMany(models.VideoCourse, { foreignKey: 'id_image', as: 'videoCourses' });
+    Image.hasMany(models.Document, { foreignKey: 'id_image', as: 'documents' });
     Image.hasMany(models.Event, { foreignKey: 'id_image', as: 'events' });
   };
 

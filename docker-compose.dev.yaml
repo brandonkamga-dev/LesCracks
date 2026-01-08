@@ -1,0 +1,14 @@
+services:
+  traefik:
+    profiles: ["prod"]
+
+  frontend:
+    profiles: ["prod"]
+
+  backend:
+    ports:
+      - "5000:5000"
+
+  mysql:
+    ports:
+      - "3306:3306"

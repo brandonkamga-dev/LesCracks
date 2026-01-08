@@ -1,343 +1,182 @@
-// src/pages/admin/AdminDashboard.tsx
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import {
-  BookOpen, Calendar, Plus, TrendingUp, Eye, Activity,
-  AlertCircle, Loader2
-} from 'lucide-react';
-import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, PieChart, Pie, Cell
-} from 'recharts';
-import { format, isValid, eachDayOfInterval, subDays } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { motion } from 'framer-motion';
+import { BookOpen, Calendar, Folder, Hash, FileText, Video, Users, TrendingUp } from 'lucide-react';
 import { adminApi } from '../../services/adminApi';
 
-// === TYPES ===
-interface Course {
-  id_course: number;
-  title: string;
-  click_count: number;
-  createdAt: string;
-  category?: { name: string };
+interface DashboardStats {
+  courses: number;
+  events: number;
+  categories: number;
+  tags: number;
+  documents?: number;
+  videos?: number;
 }
-
-interface Event {
-  id_event: number;
-  title: string;
-  date: string;
-  time: string;
-  click_count: number;
-  createdAt: string;
-  category?: { name: string };
-}
-
-interface CategoryData {
-  name: string;
-  value: number;
-}
-
-interface DashboardData {
-  stats: {
-    totalCourses: number;
-    totalEvents: number;
-    totalClicks: number;
-    avgClicksPerContent: number;
-    growthThisWeek: number;
-  };
-  charts: {
-    viewsLast7Days: Array<{ date: string; vues: number }>;
-    contentByCategory: CategoryData[];
-    topCourses: Course[];
-    topEvents: Event[];
-    recentActivity: Array<{ type: 'course' | 'event'; item: Course | Event; timeAgo: string }>;
-  };
-  insights: string[];
-}
-
-// === COULEURS ===
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
 const AdminDashboard: React.FC = () => {
-  const [data, setData] = useState<DashboardData | null>(null);
+  const [stats, setStats] = useState<DashboardStats>({
+    courses: 0,
+    events: 0,
+    categories: 0,
+    tags: 0,
+    documents: 0,
+    videos: 0,
+  });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  // === FORMATAGE SÉCURISÉ ===
-  const safeDate = (dateStr: string): Date | null => {
-    const d = new Date(dateStr);
-    return isValid(d) ? d : null;
-  };
-
-  const timeAgo = (dateStr: string): string => {
-    const d = safeDate(dateStr);
-    if (!d) return 'inconnue';
-    const diff = Date.now() - d.getTime();
-    if (diff < 0) return 'dans le futur';
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    if (hours < 1) return 'à l\'instant';
-    if (hours < 24) return `il y a ${hours}h`;
-    return `il y a ${Math.floor(hours / 24)}j`;
-  };
-
-  // === CHARGEMENT ===
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchStats = async () => {
       try {
-        setError(null);
-        const [coursesRes, eventsRes] = await Promise.all([
+        const [coursesRes, eventsRes, categoriesRes, tagsRes] = await Promise.all([
           adminApi.getCourses(),
-          adminApi.getEvents()
+          adminApi.getEvents(),
+          adminApi.getCategories(),
+          adminApi.getTags(),
         ]);
 
-        const courses: Course[] = coursesRes.data?.courses || [];
-        const events: Event[] = eventsRes.data?.events || [];
-
-        // Stats
-        const totalCourses = courses.length;
-        const totalEvents = events.length;
-        const totalClicks = courses.reduce((s, c) => s + c.click_count, 0) +
-                            events.reduce((s, e) => s + e.click_count, 0);
-        const avgClicks = totalCourses + totalEvents > 0
-          ? Math.round(totalClicks / (totalCourses + totalEvents))
-          : 0;
-
-        // Vues sur 7 jours
-        const last7Days = eachDayOfInterval({
-          start: subDays(new Date(), 6),
-          end: new Date()
+        setStats({
+          courses: coursesRes.data?.courses?.length || 0,
+          events: eventsRes.data?.events?.length || 0,
+          categories: categoriesRes.data?.categories?.length || 0,
+          tags: tagsRes.data?.tags?.length || 0,
+          documents: 0,
+          videos: 0,
         });
-
-        const viewsLast7Days = last7Days.map(day => {
-          const dayStr = format(day, 'yyyy-MM-dd');
-          const dayClicks = courses
-            .filter(c => format(safeDate(c.createdAt) || new Date(), 'yyyy-MM-dd') === dayStr)
-            .reduce((s, c) => s + c.click_count, 0) +
-            events
-            .filter(e => format(safeDate(e.createdAt) || new Date(), 'yyyy-MM-dd') === dayStr)
-            .reduce((s, e) => s + e.click_count, 0);
-          return { date: format(day, 'EEE', { locale: fr }), vues: dayClicks };
-        });
-
-        // Catégories
-        const categoryMap = new Map<string, number>();
-        [...courses, ...events].forEach(item => {
-          const cat = item.category?.name || 'Sans catégorie';
-          categoryMap.set(cat, (categoryMap.get(cat) || 0) + 1);
-        });
-        const contentByCategory: CategoryData[] = Array.from(categoryMap.entries())
-          .map(([name, value]) => ({ name, value }))
-          .sort((a, b) => b.value - a.value);
-
-        // Top
-        const topCourses = [...courses].sort((a, b) => b.click_count - a.click_count).slice(0, 5);
-        const topEvents = [...events].sort((a, b) => b.click_count - a.click_count).slice(0, 5);
-
-        // Activité récente
-        const recentActivity = [...courses, ...events]
-          .map(item => ({
-            type: 'id_course' in item ? 'course' as const : 'event' as const,
-            item,
-            timeAgo: timeAgo(item.createdAt)
-          }))
-          .sort((a, b) =>
-            (safeDate(b.item.createdAt)?.getTime() || 0) -
-            (safeDate(a.item.createdAt)?.getTime() || 0)
-          )
-          .slice(0, 8);
-
-        // Insights
-        const insights: string[] = [];
-        if (totalClicks > 500) insights.push("Plus de 500 clics cette semaine !");
-        if (topCourses[0]?.click_count > 100) insights.push(`"${topCourses[0].title}" cartonne !`);
-
-        setData({
-          stats: { totalCourses, totalEvents, totalClicks, avgClicksPerContent: avgClicks, growthThisWeek: 12 },
-          charts: { viewsLast7Days, contentByCategory, topCourses, topEvents, recentActivity },
-          insights
-        });
-      } catch (err: any) {
-        setError(err.message || 'Erreur');
+      } catch (error) {
+        console.error('Erreur lors du chargement des statistiques:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
-    const interval = setInterval(fetchData, 5 * 60 * 1000);
-    return () => clearInterval(interval);
+    fetchStats();
   }, []);
 
-  // === RENDER ===
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-96">
-        <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
-      </div>
-    );
-  }
-
-  if (error || !data) {
-    return (
-      <div className="p-6 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3">
-        <AlertCircle className="w-6 h-6 text-red-600" />
-        <p className="text-red-700">{error || 'Données indisponibles'}</p>
-      </div>
-    );
-  }
+  const statCards = [
+    {
+      label: 'Cours',
+      value: stats.courses,
+      icon: BookOpen,
+      color: 'from-blue-500 to-blue-600',
+      href: '/admin/courses',
+    },
+    {
+      label: 'Événements',
+      value: stats.events,
+      icon: Calendar,
+      color: 'from-purple-500 to-purple-600',
+      href: '/admin/events',
+    },
+    {
+      label: 'Catégories',
+      value: stats.categories,
+      icon: Folder,
+      color: 'from-green-500 to-green-600',
+      href: '/admin/categories',
+    },
+    {
+      label: 'Tags',
+      value: stats.tags,
+      icon: Hash,
+      color: 'from-orange-500 to-orange-600',
+      href: '/admin/tags',
+    },
+    {
+      label: 'Documents',
+      value: stats.documents || 0,
+      icon: FileText,
+      color: 'from-pink-500 to-pink-600',
+      href: '/admin/documents',
+    },
+    {
+      label: 'Vidéos',
+      value: stats.videos || 0,
+      icon: Video,
+      color: 'from-red-500 to-red-600',
+      href: '/admin/videos',
+    },
+  ];
 
   return (
-    <div className="space-y-8 pb-8">
-      {/* HERO */}
-      <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white p-8 rounded-2xl shadow-lg">
-        <h1 className="text-4xl font-bold">Tableau de bord</h1>
-        <p className="text-xl mt-2 opacity-90">
-          {format(new Date(), "EEEE d MMMM yyyy", { locale: fr })}
-        </p>
-        <p className="mt-4 text-sm opacity-80">
-          {data.insights[0] || "Tout est sous contrôle"}
-        </p>
-      </div>
+    <div className="space-y-8">
+      {/* Welcome Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-2xl p-8 border border-white/10"
+      >
+        <h2 className="text-3xl font-bold text-white mb-2">Bienvenue dans le tableau de bord</h2>
+        <p className="text-gray-300">Gérez tous les contenus de votre plateforme LesCracks</p>
+      </motion.div>
 
-      {/* STATS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Cours</p>
-              <p className="text-3xl font-bold">{data.stats.totalCourses}</p>
-            </div>
-            <div className="p-3 bg-blue-50 rounded-xl">
-              <BookOpen className="w-7 h-7 text-blue-600" />
-            </div>
-          </div>
-        </div>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {statCards.map((card, index) => {
+          const Icon = card.icon;
+          return (
+            <motion.a
+              key={index}
+              href={card.href}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              className="group relative overflow-hidden rounded-xl bg-slate-800 border border-white/10 p-6 hover:border-yellow-400/50 transition-all duration-300 cursor-pointer"
+            >
+              {/* Background gradient */}
+              <div className={`absolute inset-0 bg-gradient-to-br ${card.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Événements</p>
-              <p className="text-3xl font-bold">{data.stats.totalEvents}</p>
-            </div>
-            <div className="p-3 bg-green-50 rounded-xl">
-              <Calendar className="w-7 h-7 text-green-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl shadow-sm border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Clics</p>
-              <p className="text-3xl font-bold">{data.stats.totalClicks.toLocaleString()}</p>
-            </div>
-            <div className="p-3 bg-orange-50 rounded-xl">
-              <Eye className="w-7 h-7 text-orange-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl shadow-sm border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Moyenne</p>
-              <p className="text-3xl font-bold">{data.stats.avgClicksPerContent}</p>
-            </div>
-            <div className="p-3 bg-purple-50 rounded-xl">
-              <Activity className="w-7 h-7 text-purple-600" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* GRAPHIQUES */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border">
-          <h3 className="text-lg font-semibold mb-4">Vues sur 7 jours</h3>
-          <ResponsiveContainer width="100%" height={240}>
-            <LineChart data={data.charts.viewsLast7Days}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis />
-              <Tooltip />
-              <Line type="monotone" dataKey="vues" stroke="#3b82f6" strokeWidth={3} />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl shadow-sm border">
-          <h3 className="text-lg font-semibold mb-4">Par catégorie</h3>
-          <ResponsiveContainer width="100%" height={240}>
-            <PieChart>
-              <Pie
-                data={data.charts.contentByCategory}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={(entry: any) => {
-                  const total = data.charts.contentByCategory.reduce((s: number, c: CategoryData) => s + c.value, 0);
-                  const pct = total > 0 ? (entry.value / total) * 100 : 0;
-                  return `${entry.name} ${pct.toFixed(0)}%`;
-                }}
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="value"
-              >
-                {data.charts.contentByCategory.map((_, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* TOP & ACTIVITÉ */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border">
-          <h3 className="text-lg font-semibold mb-4">Top 5 Cours</h3>
-          {data.charts.topCourses.map((c, i) => (
-            <div key={c.id_course} className="flex items-center justify-between py-2">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-sm font-bold text-blue-700">
-                  {i + 1}
+              {/* Content */}
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-4">
+                  <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${card.color} flex items-center justify-center`}>
+                    <Icon className="w-6 h-6 text-white" />
+                  </div>
+                  <TrendingUp className="w-5 h-5 text-yellow-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
-                <div>
-                  <p className="font-medium truncate max-w-xs">{c.title}</p>
-                  <p className="text-xs text-gray-500">{c.click_count} clics</p>
-                </div>
-              </div>
-              <TrendingUp className="w-5 h-5 text-green-600" />
-            </div>
-          ))}
-        </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border">
-          <h3 className="text-lg font-semibold mb-4">Activité récente</h3>
-          {data.charts.recentActivity.map((act, i) => (
-            <div key={i} className="flex items-center gap-3 py-2 text-sm">
-              <div className={`w-2 h-2 rounded-full ${act.type === 'course' ? 'bg-blue-600' : 'bg-green-600'}`} />
-              <div>
-                <p className="font-medium">
-                  {act.type === 'course' ? 'Cours' : 'Événement'} : <span className="text-blue-600">"{(act.item as any).title}"</span>
-                </p>
-                <p className="text-xs text-gray-500">{act.timeAgo}</p>
+                <h3 className="text-gray-300 text-sm font-medium mb-1">{card.label}</h3>
+                <p className="text-3xl font-bold text-white">{loading ? '-' : card.value}</p>
               </div>
-            </div>
-          ))}
-        </div>
+
+              {/* Border animation */}
+              <div className="absolute inset-0 rounded-xl border border-yellow-400/0 group-hover:border-yellow-400/50 transition-all duration-300" />
+            </motion.a>
+          );
+        })}
       </div>
 
-      {/* ACTIONS */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-center">
-        <Link to="/admin/courses/new" className="bg-blue-600 hover:bg-blue-700 text-white py-4 px-8 rounded-xl font-semibold flex items-center gap-3 shadow-md">
-          <Plus className="w-6 h-6" /> Créer un cours
-        </Link>
-        <Link to="/admin/events/new" className="bg-green-600 hover:bg-green-700 text-white py-4 px-8 rounded-xl font-semibold flex items-center gap-3 shadow-md">
-          <Plus className="w-6 h-6" /> Créer un événement
-        </Link>
-      </div>
+      {/* Quick Actions */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.6 }}
+        className="bg-slate-800 rounded-2xl p-8 border border-white/10"
+      >
+        <h3 className="text-xl font-bold text-white mb-6">Actions rapides</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <a
+            href="/admin/courses"
+            className="flex items-center space-x-3 p-4 bg-white/5 hover:bg-white/10 rounded-lg transition-colors border border-white/10 hover:border-yellow-400/50"
+          >
+            <BookOpen className="w-5 h-5 text-yellow-400" />
+            <span className="text-white font-medium">Ajouter un cours</span>
+          </a>
+          <a
+            href="/admin/events"
+            className="flex items-center space-x-3 p-4 bg-white/5 hover:bg-white/10 rounded-lg transition-colors border border-white/10 hover:border-yellow-400/50"
+          >
+            <Calendar className="w-5 h-5 text-yellow-400" />
+            <span className="text-white font-medium">Ajouter un événement</span>
+          </a>
+          <a
+            href="/admin/categories"
+            className="flex items-center space-x-3 p-4 bg-white/5 hover:bg-white/10 rounded-lg transition-colors border border-white/10 hover:border-yellow-400/50"
+          >
+            <Folder className="w-5 h-5 text-yellow-400" />
+            <span className="text-white font-medium">Gérer les catégories</span>
+          </a>
+        </div>
+      </motion.div>
     </div>
   );
 };

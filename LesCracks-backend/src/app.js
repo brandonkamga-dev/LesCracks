@@ -6,12 +6,13 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
 const { handleUploadError } = require('./middleware/upload');
-const authRoutes = require('./routes/auth');
-const categoryRoutes = require('./routes/category');
-const tagRoutes = require('./routes/tag');
-const courseRoutes = require('./routes/course');
-const uploadRoutes = require('./routes/upload');
-const eventRoutes = require('./routes/event');
+const authRoutes = require('./routes/auth.route');
+const categoryRoutes = require('./routes/category.route');
+const tagRoutes = require('./routes/tag.route');
+const videoCourseRoutes = require('./routes/videoCourse.route');
+const documentRoutes = require('./routes/document.route');
+const uploadRoutes = require('./routes/upload.route');
+const eventRoutes = require('./routes/event.route');
 
 const app = express();
 
@@ -64,7 +65,8 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/tags', tagRoutes);
-app.use('/api/courses', courseRoutes);
+app.use('/api/videoCourses', videoCourseRoutes);
+app.use('/api/documents', documentRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/events', eventRoutes);
 

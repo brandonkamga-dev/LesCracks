@@ -11,7 +11,6 @@ interface FeatureCardProps {
 }
 
 const FeatureCard: React.FC<FeatureCardProps> = ({ icon: Icon, title, description, index }) => {
-  const { isDark } = useTheme();
 
   return (
     <motion.div

@@ -2,9 +2,9 @@
 const { Event, Category, Tag, Image, Admin_Event } = require('../models');
 const { Op } = require('sequelize');
 
-const eventController = {
+class EventController {
   // GET /api/events
-  getAll: async (req, res) => {
+  async getAll(req, res) {
     try {
       const { category, tag, search, date } = req.query;
       const where = {};
@@ -43,10 +43,10 @@ const eventController = {
       console.error('Get events error:', error);
       res.status(500).json({ success: false, message: 'Internal server error' });
     }
-  },
+  }
 
   // GET /api/events/:id
-  getById: async (req, res) => {
+  async getById(req, res) {
     try {
       const { id } = req.params;
       const event = await Event.findByPk(id, {
@@ -70,10 +70,10 @@ const eventController = {
       console.error('Get event error:', error);
       res.status(500).json({ success: false, message: 'Internal server error' });
     }
-  },
+  }
 
   // POST /api/events
-  create: async (req, res) => {
+  async create(req, res) {
     const t = await require('../models').sequelize.transaction();
     try {
       const {
@@ -83,7 +83,7 @@ const eventController = {
       const adminId = req.admin.id_admin;
 
       const event = await Event.create({
-        title, description, date, time, location, id_category, id_image
+        title, description, date, time, location, id_category, id_image: id_image || null
       }, { transaction: t });
 
       await Admin_Event.create({
@@ -115,10 +115,10 @@ const eventController = {
       }
       res.status(500).json({ success: false, message: 'Internal server error' });
     }
-  },
+  }
 
   // PUT /api/events/:id
-  update: async (req, res) => {
+  async update(req, res) {
     const t = await require('../models').sequelize.transaction();
     try {
       const { id } = req.params;
@@ -153,10 +153,10 @@ const eventController = {
       console.error('Update event error:', error);
       res.status(500).json({ success: false, message: 'Internal server error' });
     }
-  },
+  }
 
   // DELETE /api/events/:id
-  delete: async (req, res) => {
+  async remove(req, res) {
     try {
       const { id } = req.params;
       const deleted = await Event.destroy({ where: { id_event: id } });
@@ -174,10 +174,10 @@ const eventController = {
       console.error('Delete event error:', error);
       res.status(500).json({ success: false, message: 'Internal server error' });
     }
-  },
+  }
 
   // POST /api/events/increment/:id/click
-  incrementClick: async (req, res) => {
+  async incrementClick(req, res) {
     try {
       const { id } = req.params;
       const event = await Event.findByPk(id);
@@ -197,6 +197,118 @@ const eventController = {
       res.status(500).json({ success: false, message: 'Internal server error' });
     }
   }
-};
 
-module.exports = eventController;
+  // POST /api/events/:id/categories
+  async addCategory(req, res) {
+    try {
+      const { id } = req.params;
+      const { category_id } = req.body;
+
+      if (!category_id) {
+        return res.status(400).json({ success: false, message: 'Category ID is required' });
+      }
+
+      const event = await Event.findByPk(id);
+      if (!event) {
+        return res.status(404).json({ success: false, message: 'Event not found' });
+      }
+
+      const category = await Category.findByPk(category_id);
+      if (!category) {
+        return res.status(404).json({ success: false, message: 'Category not found' });
+      }
+
+      await event.update({ id_category: category_id });
+
+      res.json({
+        success: true,
+        message: 'Category added to event successfully'
+      });
+    } catch (error) {
+      console.error('Add category to event error:', error);
+      res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+  }
+
+  // DELETE /api/events/:id/categories/:categoryId
+  async removeCategory(req, res) {
+    try {
+      const { id, categoryId } = req.params;
+
+      const event = await Event.findByPk(id);
+      if (!event) {
+        return res.status(404).json({ success: false, message: 'Event not found' });
+      }
+
+      if (event.id_category != categoryId) {
+        return res.status(400).json({ success: false, message: 'Event does not have this category' });
+      }
+
+      await event.update({ id_category: null });
+
+      res.json({
+        success: true,
+        message: 'Category removed from event successfully'
+      });
+    } catch (error) {
+      console.error('Remove category from event error:', error);
+      res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+  }
+
+  // POST /api/events/:id/tags
+  async addTag(req, res) {
+    try {
+      const { id } = req.params;
+      const { tag_id } = req.body;
+
+      if (!tag_id) {
+        return res.status(400).json({ success: false, message: 'Tag ID is required' });
+      }
+
+      const event = await Event.findByPk(id);
+      if (!event) {
+        return res.status(404).json({ success: false, message: 'Event not found' });
+      }
+
+      const tag = await Tag.findByPk(tag_id);
+      if (!tag) {
+        return res.status(404).json({ success: false, message: 'Tag not found' });
+      }
+
+      await event.addTag(tag);
+
+      res.json({
+        success: true,
+        message: 'Tag added to event successfully'
+      });
+    } catch (error) {
+      console.error('Add tag to event error:', error);
+      res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+  }
+
+  // DELETE /api/events/:id/tags/:tagId
+  async removeTag(req, res) {
+    try {
+      const { id, tagId } = req.params;
+
+      const event = await Event.findByPk(id);
+      if (!event) {
+        return res.status(404).json({ success: false, message: 'Event not found' });
+      }
+
+      await event.removeTag(tagId);
+
+      res.json({
+        success: true,
+        message: 'Tag removed from event successfully'
+      });
+    } catch (error) {
+      console.error('Remove tag from event error:', error);
+      res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+  }
+}
+
+module.exports = new EventController();

@@ -1,353 +1,186 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Award, Target, TrendingUp, ArrowRight, Code, Globe, Rocket, Heart, Zap } from 'lucide-react';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowRight, ChevronDown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import WhatsAppIcon from '../components/icons/WhatsAppIcon';
-import { useTheme } from '../contexts/ThemeContext';
 
 const About: React.FC = () => {
-  const { isDark } = useTheme();
+  const [openFAQs, setOpenFAQs] = useState<boolean[]>(new Array(6).fill(false));
 
-  const pillars = [
+  const faqs = [
     {
-      icon: Code,
-      title: 'Approche pratique',
-      subtitle: '80 % de pratique, 20 % de théorie',
-      description: 'Chaque concept est immédiatement appliqué à travers des projets concrets et pertinents.'
+      question: "Qu'est-ce que LesCracks ?",
+      answer: "LesCracks est une agence éducative dédiée à la formation en technologie, avec des programmes intensifs et pratiques pour aider les jeunes talents à bâtir des carrières solides."
     },
     {
-      icon: Target,
-      title: 'Structure et méthode',
-      subtitle: 'Apprentissage progressif',
-      description: 'Un apprentissage progressif, étape par étape, pour garantir une montée en compétence claire et durable.'
+      question: "Qui peut rejoindre LesCracks ?",
+      answer: "Tous ceux qui veulent se lancer dans la tech, débutants ou avec des bases. La pédagogie s’adapte au niveau de chacun."
     },
     {
-      icon: Globe,
-      title: 'Pertinence marché',
-      subtitle: 'Aligné avec les besoins réels',
-      description: 'Des programmes conçus en lien avec les tendances et besoins réels du secteur technologique.'
+      question: "Quels sont vos domaines de formation ?",
+      answer: "Développement Web Full Stack, Mobile, Intelligence Artificielle, Data Science et Cybersécurité, selon les besoins actuels du marché."
     },
     {
-      icon: Award,
-      title: 'Excellence et discipline',
-      subtitle: 'Culture de la qualité',
-      description: 'Une culture d\'effort, de constance et de qualité pour former des profils capables de performer à haut niveau.'
-    }
-  ];
-
-  const values = [
-    {
-      icon: Target,
-      title: 'Rigueur et exigence',
-      description: 'Chaque apprentissage est orienté vers des résultats concrets et mesurables.'
+      question: "Comment se déroule l'accompagnement ?",
+      answer: "Pratique intensive, mentor dédié, projets concrets, suivi personnalisé et accès au réseau professionnel pour faciliter l’insertion."
     },
     {
-      icon: TrendingUp,
-      title: 'Apprentissage continu',
-      description: 'Nous évoluons avec la technologie pour offrir des méthodes toujours actuelles et pertinentes.'
+      question: "Quels sont les tarifs ?",
+      answer: "Tarifs variables selon durée et intensité du programme. Facilités de paiement et bourses pour profils méritants."
     },
     {
-      icon: Zap,
-      title: 'Impact réel',
-      description: 'Chaque projet doit créer de la valeur : pour l\'apprenant, pour l\'entreprise, et pour la communauté.'
-    },
-    {
-      icon: Heart,
-      title: 'Humanité et engagement',
-      description: 'Nous croyons à un accompagnement humain, accessible et bienveillant, au service de la réussite individuelle.'
+      question: "Comment s'inscrire ?",
+      answer: "Contactez-nous via WhatsApp ou via le formulaire du site. Un entretien permettra d’évaluer votre niveau et de vous guider dans le processus."
     }
   ];
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${
-      isDark ? 'bg-gray-900' : 'bg-white'
-    }`}>
-      {/* Hero Section */}
-      <section className="pt-24 pb-20">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
+    <div className="min-h-screen bg-[#020617]">
+      {/* HERO */}
+      <section className="pt-32 pb-20">
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-center"
+            className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-6"
           >
-            <h1 className={`text-5xl lg:text-6xl font-bold mb-8 leading-tight ${
-              isDark ? 'text-white' : 'text-gray-900'
-            }`}>
-              À propos de
-              <span className="block text-[#1f48ff]">LesCracks</span>
-            </h1>
-            
-            <div className="mb-12">
-              <p className="text-[#f59e0b] font-bold text-2xl mb-6">
-                Former • Innover • Transformer
-              </p>
-              <p className={`text-xl lg:text-2xl max-w-4xl mx-auto leading-relaxed ${
-                isDark ? 'text-gray-300' : 'text-gray-600'
-              }`}>
-                LesCracks est une agence éducative dédiée à celles et ceux qui veulent construire une carrière solide dans la technologie.
-              </p>
-              <p className={`text-lg lg:text-xl max-w-4xl mx-auto leading-relaxed mt-4 ${
-                isDark ? 'text-gray-400' : 'text-gray-600'
-              }`}>
-                Nous aidons les débutants à apprendre de manière claire, pratique et structurée pour devenir des professionnels visibles et compétents dans le monde numérique.
-              </p>
+            À Propos de <span className="text-primary-yellow">LesCracks</span>
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.1 }}
+            className="text-lg sm:text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed"
+          >
+            Nous formons les futurs acteurs du numérique à travers des programmes axés sur la pratique, la rigueur et la progression mesurable.
+          </motion.p>
+        </div>
+      </section>
+
+      {/* FONDATEUR */}
+      <section className="py-20">
+        <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
+          {/* Photo */}
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="flex justify-center"
+          >
+            <div className="relative w-92 h-92 rounded-2xl overflow-hidden shadow-2xl ring-2 ring-white/20">
+              <img
+                src="/images/photo-brandon.jpeg"
+                alt="Brandon Kamga - Fondateur"
+                className="w-full h-full object-cover"
+              />
             </div>
           </motion.div>
-        </div>
-      </section>
 
-      {/* Mission & Vision */}
-      <section className={`py-20 ${isDark ? 'bg-gray-800' : 'bg-gray-50'}`}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-12">
-            {/* Mission */}
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-              className={`p-8 rounded-2xl ${
-                isDark ? 'bg-gray-900' : 'bg-white'
-              } shadow-lg`}
-            >
-              <div className="flex items-center mb-6">
-                <div className="w-12 h-12 bg-[#1f48ff] rounded-lg flex items-center justify-center mr-4">
-                  <Rocket className="w-6 h-6 text-white" />
-                </div>
-                <h2 className={`text-3xl font-bold ${
-                  isDark ? 'text-white' : 'text-gray-900'
-                }`}>
-                  Notre Mission
-                </h2>
-              </div>
-              <p className={`text-lg leading-relaxed mb-4 ${
-                isDark ? 'text-gray-300' : 'text-gray-600'
-              }`}>
-                Démocratiser l'accès aux compétences technologiques grâce à une approche concrète et structurée.
-              </p>
-              <p className={`text-base leading-relaxed ${
-                isDark ? 'text-gray-400' : 'text-gray-600'
-              }`}>
-                Nous formons les futurs acteurs du numérique à travers des programmes axés sur la pratique, la rigueur et la progression mesurable. Chaque apprenant est guidé pour transformer ses connaissances en compétences réelles et exploitables.
-              </p>
-            </motion.div>
-
-            {/* Vision */}
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-              className={`p-8 rounded-2xl ${
-                isDark ? 'bg-gray-900' : 'bg-white'
-              } shadow-lg`}
-            >
-              <div className="flex items-center mb-6">
-                <div className="w-12 h-12 bg-[#f59e0b] rounded-lg flex items-center justify-center mr-4">
-                  <Globe className="w-6 h-6 text-white" />
-                </div>
-                <h2 className={`text-3xl font-bold ${
-                  isDark ? 'text-white' : 'text-gray-900'
-                }`}>
-                  Notre Vision
-                </h2>
-              </div>
-              <p className={`text-lg leading-relaxed mb-4 ${
-                isDark ? 'text-gray-300' : 'text-gray-600'
-              }`}>
-                Devenir la référence en matière d'apprentissage tech structuré en Afrique et au-delà.
-              </p>
-              <p className={`text-base leading-relaxed ${
-                isDark ? 'text-gray-400' : 'text-gray-600'
-              }`}>
-                Nous voulons connecter les talents émergents aux opportunités du marché technologique mondial tout en favorisant un apprentissage ancré dans la réalité des besoins des entreprises.
-              </p>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Pillars */}
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Info */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
-            className="text-center mb-16"
           >
-            <h2 className={`text-4xl lg:text-5xl font-bold mb-6 ${
-              isDark ? 'text-white' : 'text-gray-900'
-            }`}>
-              Nos Piliers
+            <h3 className="text-3xl lg:text-4xl font-bold text-white mb-2">Brandon Kamga</h3>
+            <p className="text-lg font-semibold text-primary-yellow mb-6">
+              Formateur • Développeur Full Stack • Passionné ML
+            </p>
+            <div className="space-y-4 text-gray-300 mb-8">
+              <p>Fondateur et formateur passionné, expert en développement Full Stack et Machine Learning, dédié à l'accompagnement des jeunes talents africains.</p>
+              <p><span className="font-semibold text-white">Le constat :</span> beaucoup de jeunes négligent leur profil et manquent d'encadrement structuré.</p>
+              <p><span className="font-semibold text-white">La solution :</span> un accompagnement pratique, structuré et orienté marché pour rendre les jeunes employables.</p>
+            </div>
+            <a
+              href="https://wa.me/237650830057?text=Bonjour Brandon !"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center px-6 py-3 bg-primary-yellow text-black rounded-lg font-semibold hover:bg-yellow-500 transition-all duration-300"
+            >
+              <WhatsAppIcon className="w-5 h-5 mr-2" />
+              Contacter Brandon
+            </a>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="py-20">
+        <div className="max-w-6xl mx-auto px-6">
+          <motion.div className="text-center mb-16">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight">
+              Questions <span className="text-primary-yellow">Fréquentes</span>
             </h2>
-            <p className={`text-xl max-w-3xl mx-auto ${
-              isDark ? 'text-gray-300' : 'text-gray-600'
-            }`}>
-              Les fondements de notre approche pédagogique
+            <p className="mt-4 text-lg text-gray-400 max-w-2xl mx-auto">
+              Tout ce que vous devez savoir sur LesCracks et nos programmes
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {pillars.map((pillar, index) => (
+          <div className="space-y-4">
+            {faqs.map((faq, idx) => (
               <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                className={`p-6 rounded-xl ${
-                  isDark ? 'bg-gray-800' : 'bg-gray-50'
-                } hover:shadow-xl transition-all duration-300`}
+                key={idx}
+                className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden"
               >
-                <div className="w-14 h-14 bg-[#1f48ff] rounded-lg flex items-center justify-center mb-4">
-                  <pillar.icon className="w-7 h-7 text-white" />
-                </div>
-                <h3 className={`text-xl font-bold mb-2 ${
-                  isDark ? 'text-white' : 'text-gray-900'
-                }`}>
-                  {pillar.title}
-                </h3>
-                <p className={`text-sm font-semibold mb-3 ${
-                  isDark ? 'text-[#f59e0b]' : 'text-[#1f48ff]'
-                }`}>
-                  {pillar.subtitle}
-                </p>
-                <p className={`text-sm leading-relaxed ${
-                  isDark ? 'text-gray-400' : 'text-gray-600'
-                }`}>
-                  {pillar.description}
-                </p>
+                <button
+                  onClick={() => setOpenFAQs(prev => prev.map((val, i) => i === idx ? !val : val))}
+                  className="w-full p-6 text-left flex justify-between items-center hover:bg-white/10 transition-colors"
+                >
+                  <h3 className="text-xl font-bold text-white">{faq.question}</h3>
+                  <motion.div
+                    animate={{ rotate: openFAQs[idx] ? 180 : 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <ChevronDown className="w-5 h-5 text-primary-yellow" />
+                  </motion.div>
+                </button>
+                <AnimatePresence>
+                  {openFAQs[idx] && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="px-6 pb-6 text-gray-300"
+                    >
+                      {faq.answer}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Values */}
-      <section className={`py-20 ${isDark ? 'bg-gray-800' : 'bg-gray-50'}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-16"
-          >
-            <h2 className={`text-4xl lg:text-5xl font-bold mb-6 ${
-              isDark ? 'text-white' : 'text-gray-900'
-            }`}>
-              Nos Valeurs
-            </h2>
-            <p className={`text-xl max-w-3xl mx-auto ${
-              isDark ? 'text-gray-300' : 'text-gray-600'
-            }`}>
-              Les principes qui guident chacune de nos actions
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {values.map((value, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                className={`p-6 rounded-xl ${
-                  isDark ? 'bg-gray-900' : 'bg-white'
-                } shadow-lg hover:shadow-xl transition-all duration-300`}
-              >
-                <div className="w-12 h-12 bg-[#1f48ff] rounded-lg flex items-center justify-center mb-4">
-                  <value.icon className="w-6 h-6 text-white" />
-                </div>
-                <h3 className={`text-lg font-bold mb-3 ${
-                  isDark ? 'text-white' : 'text-gray-900'
-                }`}>
-                  {value.title}
-                </h3>
-                <p className={`text-sm leading-relaxed ${
-                  isDark ? 'text-gray-400' : 'text-gray-600'
-                }`}>
-                  {value.description}
-                </p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Approach */}
-      <section className="py-20">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className={`p-12 rounded-2xl ${
-              isDark ? 'bg-gray-800' : 'bg-[#1f48ff]'
-            } text-white text-center`}
-          >
-            <h2 className="text-4xl lg:text-5xl font-bold mb-6">
-              Notre Approche
-            </h2>
-            <p className="text-2xl font-semibold mb-6">
-              Apprendre en construisant. Évoluer en créant.
-            </p>
-            <p className="text-lg leading-relaxed max-w-4xl mx-auto mb-4">
-              Nos formations reposent sur des projets réels, inspirés des besoins concrets du marché. Chaque participant développe un portfolio professionnel solide et apprend à se positionner comme un acteur crédible dans la tech.
-            </p>
-            <p className="text-xl font-semibold mt-8 max-w-3xl mx-auto">
-              Chez LesCracks, on n'apprend pas la théorie pour la théorie : on apprend pour agir, créer et bâtir une carrière durable.
-            </p>
-          </motion.div>
         </div>
       </section>
 
       {/* CTA */}
-      <section className={`py-20 ${isDark ? 'bg-gray-800' : 'bg-gray-50'}`}>
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            <h2 className={`text-4xl font-bold mb-6 ${
-              isDark ? 'text-white' : 'text-gray-900'
-            }`}>
+      <section className="py-20 bg-[#1f48ff]">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }}>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-8">
               Prêt à transformer ta carrière tech ?
             </h2>
-            <p className={`text-xl mb-8 ${
-              isDark ? 'text-gray-300' : 'text-gray-600'
-            }`}>
-              Rejoins une communauté de créateurs qui apprennent, progressent et construisent ensemble.
-              <span className="block mt-2 font-semibold text-[#f59e0b]">
-                Découvrez comment nous pouvons vous accompagner dans votre transformation
-              </span>
-            </p>
             
-            <div className="flex flex-col sm:flex-row gap-6 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
                 href="https://wa.me/237650830057?text=Bonjour ! Je veux en savoir plus sur LesCracks"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center px-10 py-5 bg-[#25D366] text-white text-lg font-bold rounded-xl hover:bg-green-600 transition-all duration-300 shadow-lg hover:shadow-xl"
+                className="inline-flex items-center justify-center px-8 py-4 bg-primary-yellow text-black text-lg font-bold rounded-xl hover:bg-yellow-500 transition-all shadow-lg"
               >
                 <WhatsAppIcon className="mr-3 w-6 h-6" />
-                Nous contacter sur WhatsApp
+                Nous contacter
                 <ArrowRight className="ml-3 w-6 h-6" />
               </a>
-              
               <Link
                 to="/accompagnement"
-                className="inline-flex items-center justify-center px-10 py-5 border-2 border-[#1f48ff] text-[#1f48ff] text-lg font-bold rounded-xl hover:bg-[#1f48ff] hover:text-white transition-all duration-300"
+                className="inline-flex items-center justify-center px-8 py-4 border-2 border-white text-white text-lg font-bold rounded-xl hover:bg-white hover:text-[#1f48ff] transition-all"
               >
-                <Rocket className="mr-3 w-6 h-6" />
                 Voir nos programmes
+                <ArrowRight className="ml-3 w-6 h-6" />
               </Link>
             </div>
           </motion.div>

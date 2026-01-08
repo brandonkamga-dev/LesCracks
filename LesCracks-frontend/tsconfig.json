@@ -1,4 +1,10 @@
 {
+  "compilerOptions": {
+    "baseUrl": ".", // Définit la base des imports à la racine
+    "paths": {
+      "@/*": ["src/*"] // Définit l'alias @ vers le dossier src
+    }
+  },
   "files": [],
   "references": [
     { "path": "./tsconfig.app.json" },

@@ -20,12 +20,6 @@ module.exports = (sequelize, DataTypes) => {
   });
 
   Tag.associate = function(models) {
-    Tag.belongsToMany(models.Course, {
-      through: models.Course_Tag,
-      foreignKey: 'id_tag',
-      otherKey: 'id_course',
-      as: 'courses'
-    });
     Tag.belongsToMany(models.Event, {
       through: models.Event_Tag,
       foreignKey: 'id_tag',
