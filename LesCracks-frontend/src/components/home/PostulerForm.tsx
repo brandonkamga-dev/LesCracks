@@ -1,9 +1,6 @@
-// src/components/PostulerForm.tsx
+// src/components/home/PostulerForm.tsx
+import { useState } from "react";
 import { Rocket } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogTrigger,
@@ -11,117 +8,66 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
-  DialogClose,
 } from "@/components/ui/dialog";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import ProgrammesForm from "@/components/ProgrammesForm";
 
-export function PostulerForm() {
+interface PostulerFormProps {
+  /** Classe CSS personnalisée pour le bouton */
+  className?: string;
+  /** Taille du bouton (text, padding, etc.) */
+  size?: "sm" | "md" | "lg";
+  /** Si le bouton doit prendre toute la largeur */
+  fullWidth?: boolean;
+}
+
+export function PostulerForm({
+  className = "",
+  size = "md",
+  fullWidth = false
+}: PostulerFormProps) {
+  const [dialogKey, setDialogKey] = useState(0);
+
+  const handleOpenChange = (open: boolean) => {
+    if (!open) setDialogKey(prev => prev + 1); // reset formulaire
+  };
+
+  // Définir padding/text selon la taille
+  const sizeClasses = {
+    sm: "px-4 py-2 text-sm",
+    md: "px-6 py-3 text-base",
+    lg: "px-10 py-4 text-lg"
+  };
+
   return (
-    <Dialog>
+    <Dialog onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button className="px-10 py-4 bg-gradient-to-r from-blue-600 to-blue-800 text-white text-lg font-bold rounded-xl hover:from-blue-700 hover:to-blue-900 transition shadow-lg flex items-center gap-3">
-          <Rocket className="w-6 h-6" />
+        <button
+          className={`
+            ${sizeClasses[size]} 
+            ${fullWidth ? "w-full" : "w-auto"}
+            bg-gradient-to-r from-blue-600 to-blue-800
+            text-white font-bold
+            hover:from-yellow-300 hover:to-yellow-500
+            transition-all duration-300
+            rounded-xl shadow-lg flex items-center justify-center gap-3
+            cursor-pointer
+            ${className}
+          `}
+        >
+          <Rocket className="w-5 h-5 sm:w-6 sm:h-6" />
           Postuler maintenant
-        </Button>
-
+        </button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto bg-[#020617] border border-white/20">
         <DialogHeader>
-          <DialogTitle className="text-2xl">Formulaire de candidature</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-2xl text-white">Formulaire de candidature</DialogTitle>
+          <DialogDescription className="text-gray-400">
             Remplissez ce formulaire pour postuler à nos programmes et nous permettre de mieux vous accompagner.
           </DialogDescription>
         </DialogHeader>
 
-        <form className="grid gap-6">
-          {/* Infos personnelles */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="prenom">Prénom</Label>
-              <Input id="prenom" placeholder="Votre prénom" required />
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="nom">Nom</Label>
-              <Input id="nom" placeholder="Votre nom" required />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="telephone">Téléphone (WhatsApp)</Label>
-              <Input id="telephone" placeholder="+237 6X XX XX XX" required />
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="exemple@email.com" required />
-            </div>
-          </div>
-
-          {/* Programme souhaité */}
-          <div className="grid gap-2">
-            <Label htmlFor="programme">Programme souhaité</Label>
-            <Select>
-              <SelectTrigger id="programme">
-                <SelectValue placeholder="Choisissez un programme" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="accompagnement-360">Accompagnement 360</SelectItem>
-                <SelectItem value="formation-p2p">Formation P2P</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Niveau d'expérience */}
-          <div className="grid gap-2">
-            <Label>Niveau d'expérience</Label>
-            <RadioGroup defaultValue="debutant" className="flex gap-4">
-              <div className="flex items-center gap-2">
-                <RadioGroupItem value="debutant" id="debutant" />
-                <Label htmlFor="debutant">Débutant</Label>
-              </div>
-              <div className="flex items-center gap-2">
-                <RadioGroupItem value="intermediaire" id="intermediaire" />
-                <Label htmlFor="intermediaire">Intermédiaire</Label>
-              </div>
-              <div className="flex items-center gap-2">
-                <RadioGroupItem value="avance" id="avance" />
-                <Label htmlFor="avance">Avancé</Label>
-              </div>
-            </RadioGroup>
-          </div>
-
-          {/* Motivation / Objectifs */}
-          <div className="grid gap-2">
-            <Label htmlFor="motivation">Pourquoi voulez-vous rejoindre ce programme ?</Label>
-            <Textarea id="motivation" placeholder="Décrivez votre motivation" required />
-          </div>
-
-          {/* Question ouverte supplémentaire */}
-          <div className="grid gap-2">
-            <Label htmlFor="attentes">Quelles sont vos attentes principales ?</Label>
-            <Textarea id="attentes" placeholder="Objectifs à atteindre" />
-          </div>
-
-          <DialogFooter className="mt-4 flex justify-end gap-2">
-            <DialogClose asChild>
-              <Button variant="outline" className="text-black border-gray-300 hover:bg-yellow-400">
-                Annuler
-              </Button>
-            </DialogClose>
-            <Button
-              type="submit"
-              className="px-6 py-2 bg-gradient-to-r from-blue-600 to-blue-800 text-white font-bold rounded-lg hover:from-blue-700 hover:to-blue-900 transition"
-            >
-              Envoyer
-            </Button>
-          </DialogFooter>
-
-        </form>
+        <ProgrammesForm key={dialogKey} />
       </DialogContent>
     </Dialog>
   );

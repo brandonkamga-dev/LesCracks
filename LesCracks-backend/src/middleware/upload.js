@@ -21,7 +21,7 @@ const storage = multer.diskStorage({
 });
 
 // Filtre : images seulement
-const fileFilter = (req, file, cb) => {
+const imageFileFilter = (req, file, cb) => {
   const allowedTypes = /jpeg|jpg|png|gif|webp/;
   const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
   const mimetype = allowedTypes.test(file.mimetype);
@@ -33,10 +33,29 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
+// Filtre : documents
+const documentFileFilter = (req, file, cb) => {
+  const allowedTypes = /pdf|doc|docx|txt|xls|xlsx|ppt|pptx/;
+  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+  const mimetype = file.mimetype; // Allow any mimetype for documents
+
+  if (extname) {
+    return cb(null, true);
+  } else {
+    cb(new Error('Documents only (pdf, doc, docx, txt, xls, xlsx, ppt, pptx)'));
+  }
+};
+
 const upload = multer({
   storage,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
-  fileFilter
+  fileFilter: imageFileFilter
+});
+
+const documentUpload = multer({
+  storage,
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB for documents
+  fileFilter: documentFileFilter
 });
 
 // Gestion d'erreur Multer
@@ -57,4 +76,4 @@ const handleUploadError = (error, req, res, next) => {
   next();
 };
 
-module.exports = { upload, handleUploadError };
+module.exports = { upload, documentUpload, handleUploadError };

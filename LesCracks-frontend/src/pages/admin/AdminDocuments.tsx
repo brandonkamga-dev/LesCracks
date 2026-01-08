@@ -1,25 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Edit, Trash2, PlayCircle, Tag, BookOpen, MousePointer, X, Upload, Loader2 } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, FileText, Tag, Download, X, Upload, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { adminApi } from '../../services/adminApi';
 
-interface Course {
-  id_course: number;
+interface Document {
+  id_document: string;
   title: string;
   description: string;
-  youtube_link: string;
-  id_category: number;
+  file_url: string;
+  file_name?: string;
+  file_size?: number;
+  mime_type?: string;
   id_image?: number;
-  click_count: number;
+  download_count: number;
   createdAt?: string;
-  category?: { id_category: number; name: string };
-  image?: { id_image: number; image_url: string };
+  categories?: Array<{ id_category: number; name: string }>;
   tags?: Array<{ id_tag: number; name: string }>;
+  image?: { id_image: number; image_url: string };
 }
 
-const AdminCourses: React.FC = () => {
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
+const AdminDocuments: React.FC = () => {
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [filteredDocuments, setFilteredDocuments] = useState<Document[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [tags, setTags] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,14 +30,18 @@ const AdminCourses: React.FC = () => {
 
   // Modal
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingCourse, setEditingCourse] = useState<Course | null>(null);
+  const [editingDocument, setEditingDocument] = useState<Document | null>(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    video_url: '',
-    id_category: '',
+    file_url: '',
+    file_name: '',
+    file_size: '',
+    mime_type: '',
+    categoryIds: [] as number[],
     tagIds: [] as number[],
-    imageFile: null as File | null
+    imageFile: null as File | null,
+    documentFile: null as File | null
   });
   const [uploading, setUploading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -46,13 +52,13 @@ const AdminCourses: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [coursesRes, categoriesRes, tagsRes] = await Promise.all([
-          adminApi.getCourses(),
+        const [documentsRes, categoriesRes, tagsRes] = await Promise.all([
+          adminApi.getDocuments(),
           adminApi.getCategories(),
           adminApi.getTags()
         ]);
 
-        setCourses(coursesRes.data?.courses || []);
+        setDocuments(documentsRes.data?.documents || []);
         setCategories(categoriesRes.data?.categories || []);
         setTags(tagsRes.data?.tags || []);
       } catch (error) {
@@ -66,42 +72,50 @@ const AdminCourses: React.FC = () => {
 
   // Filtrage
   useEffect(() => {
-    let filtered = courses;
+    let filtered = documents;
     if (search) {
       const lower = search.toLowerCase();
-      filtered = filtered.filter(c =>
-        c.title.toLowerCase().includes(lower) ||
-        c.description.toLowerCase().includes(lower)
+      filtered = filtered.filter(d =>
+        d.title.toLowerCase().includes(lower) ||
+        d.description.toLowerCase().includes(lower)
       );
     }
     if (selectedCategory) {
-      filtered = filtered.filter(c => c.id_category === Number(selectedCategory));
+      filtered = filtered.filter(d => d.categories?.some(c => c.id_category === Number(selectedCategory)));
     }
-    setFilteredCourses(filtered);
-  }, [courses, search, selectedCategory]);
+    setFilteredDocuments(filtered);
+  }, [documents, search, selectedCategory]);
 
   // Ouvrir modal
-  const openModal = (course?: Course) => {
-    if (course) {
-      setEditingCourse(course);
+  const openModal = (document?: Document) => {
+    if (document) {
+      setEditingDocument(document);
       setFormData({
-        title: course.title,
-        description: course.description,
-        video_url: course.youtube_link,
-        id_category: course.id_category.toString(),
-        tagIds: course.tags?.map(t => t.id_tag) || [],
-        imageFile: null
+        title: document.title,
+        description: document.description,
+        file_url: document.file_url,
+        file_name: document.file_name || '',
+        file_size: document.file_size?.toString() || '',
+        mime_type: document.mime_type || '',
+        categoryIds: document.categories?.map(c => c.id_category) || [],
+        tagIds: document.tags?.map(t => t.id_tag) || [],
+        imageFile: null,
+        documentFile: null
       });
-      setImagePreview(course.image?.image_url || null);
+      setImagePreview(document.image?.image_url || null);
     } else {
-      setEditingCourse(null);
+      setEditingDocument(null);
       setFormData({
         title: '',
         description: '',
-        video_url: '',
-        id_category: '',
+        file_url: '',
+        file_name: '',
+        file_size: '',
+        mime_type: '',
+        categoryIds: [],
         tagIds: [],
-        imageFile: null
+        imageFile: null,
+        documentFile: null
       });
       setImagePreview(null);
     }
@@ -110,7 +124,7 @@ const AdminCourses: React.FC = () => {
 
   const closeModal = () => {
     setModalOpen(false);
-    setEditingCourse(null);
+    setEditingDocument(null);
     setImagePreview(null);
   };
 
@@ -125,41 +139,69 @@ const AdminCourses: React.FC = () => {
     }
   };
 
+  // Gestion document
+  const handleDocumentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFormData(prev => ({ ...prev, documentFile: file }));
+    }
+  };
+
   // Soumission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.title || !formData.description || !formData.video_url || !formData.id_category) {
+    if (!formData.title || !formData.description) {
       alert('Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+
+    if (!editingDocument && !formData.documentFile) {
+      alert('Veuillez sélectionner un fichier document');
       return;
     }
 
     setUploading(true);
     try {
-      let id_image = editingCourse?.id_image;
+      let id_image = editingDocument?.id_image;
+      let file_url = editingDocument?.file_url || '';
+      let file_name = editingDocument?.file_name || '';
+      let file_size = editingDocument?.file_size || 0;
+      let mime_type = editingDocument?.mime_type || '';
 
       if (formData.imageFile) {
         const uploadRes = await adminApi.uploadImage(formData.imageFile);
         id_image = uploadRes.data.image.id_image;
       }
 
+      if (formData.documentFile) {
+        const uploadRes = await adminApi.uploadDocument(formData.documentFile);
+        file_url = uploadRes.data.file_url;
+        file_name = uploadRes.data.file_name || formData.documentFile.name;
+        file_size = uploadRes.data.file_size || formData.documentFile.size;
+        mime_type = uploadRes.data.mime_type || formData.documentFile.type;
+      }
+
       const payload = {
         title: formData.title,
         description: formData.description,
-        video_url: formData.video_url,
-        id_category: Number(formData.id_category),
+        file_url,
+        file_name,
+        file_size,
+        mime_type,
         id_image,
+        categoryIds: formData.categoryIds,
         tagIds: formData.tagIds
       };
 
-      if (editingCourse) {
-        await adminApi.updateCourse(editingCourse.id_course, payload);
+      if (editingDocument) {
+        await adminApi.updateDocument(editingDocument.id_document, payload);
       } else {
-        await adminApi.createCourse(payload);
+        await adminApi.createDocument(payload);
       }
 
       // Rafraîchir
-      const res = await adminApi.getCourses();
-      setCourses(res.data?.courses || []);
+      const res = await adminApi.getDocuments();
+      setDocuments(res.data?.documents || []);
       closeModal();
     } catch (error) {
       alert('Erreur lors de la sauvegarde');
@@ -169,11 +211,11 @@ const AdminCourses: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('Supprimer ce cours ?')) return;
+  const handleDelete = async (id: string) => {
+    if (!confirm('Supprimer ce document ?')) return;
     try {
-      await adminApi.deleteCourse(id);
-      setCourses(prev => prev.filter(c => c.id_course !== id));
+      await adminApi.deleteDocument(id);
+      setDocuments(prev => prev.filter(d => d.id_document !== id));
     } catch {
       alert('Erreur suppression');
     }
@@ -207,7 +249,7 @@ const AdminCourses: React.FC = () => {
     }
   };
 
-  const totalClicks = courses.reduce((s, c) => s + c.click_count, 0);
+  const totalDownloads = documents.reduce((s, d) => s + d.download_count, 0);
 
   if (loading) {
     return (
@@ -227,15 +269,15 @@ const AdminCourses: React.FC = () => {
         className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
       >
         <div>
-          <h1 className="text-2xl font-bold text-white">Gestion des Cours</h1>
-          <p className="text-gray-400">Créer, modifier et suivre vos cours</p>
+          <h1 className="text-2xl font-bold text-white">Gestion des Documents</h1>
+          <p className="text-gray-400">Créer, modifier et suivre vos documents</p>
         </div>
         <button
           onClick={() => openModal()}
           className="inline-flex items-center gap-2 px-6 py-3 bg-yellow-400 text-black rounded-lg hover:bg-yellow-300 transition-colors font-semibold"
         >
           <Plus className="w-5 h-5" />
-          Nouveau Cours
+          Nouveau Document
         </button>
       </motion.div>
 
@@ -280,10 +322,10 @@ const AdminCourses: React.FC = () => {
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-400">Total Cours</p>
-              <p className="text-3xl font-bold text-white">{courses.length}</p>
+              <p className="text-sm text-gray-400">Total Documents</p>
+              <p className="text-3xl font-bold text-white">{documents.length}</p>
             </div>
-            <BookOpen className="w-8 h-8 text-yellow-400" />
+            <FileText className="w-8 h-8 text-yellow-400" />
           </div>
         </motion.div>
         <motion.div
@@ -294,10 +336,10 @@ const AdminCourses: React.FC = () => {
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-400">Clics Totaux</p>
-              <p className="text-3xl font-bold text-white">{totalClicks}</p>
+              <p className="text-sm text-gray-400">Téléchargements Totaux</p>
+              <p className="text-3xl font-bold text-white">{totalDownloads}</p>
             </div>
-            <MousePointer className="w-8 h-8 text-yellow-400" />
+            <Download className="w-8 h-8 text-yellow-400" />
           </div>
         </motion.div>
         <motion.div
@@ -310,7 +352,7 @@ const AdminCourses: React.FC = () => {
             <div>
               <p className="text-sm text-gray-400">Moyenne</p>
               <p className="text-3xl font-bold text-white">
-                {courses.length ? Math.round(totalClicks / courses.length) : 0}
+                {documents.length ? Math.round(totalDownloads / documents.length) : 0}
               </p>
             </div>
             <div className="w-8 h-8 bg-yellow-400/20 rounded-lg flex items-center justify-center">
@@ -331,44 +373,56 @@ const AdminCourses: React.FC = () => {
           <table className="min-w-full divide-y divide-white/10">
             <thead className="bg-slate-700/50">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase">Cours</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase">Catégorie</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase">Clics</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase">Document</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase">Catégories</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase">Téléchargements</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase">Tags</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/10">
-              {filteredCourses.map((course) => (
-                <tr key={course.id_course} className="hover:bg-slate-700/50 transition-colors">
+              {filteredDocuments.map((document) => (
+                <tr key={document.id_document} className="hover:bg-slate-700/50 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-3">
-                      {course.image?.image_url ? (
-                        <img src={course.image.image_url} alt="" className="w-12 h-12 rounded-lg object-cover" />
+                      {document.image?.image_url ? (
+                        <img src={document.image.image_url} alt="" className="w-12 h-12 rounded-lg object-cover" />
                       ) : (
                         <div className="w-12 h-12 bg-slate-700 rounded-lg flex items-center justify-center">
-                          <PlayCircle className="w-6 h-6 text-gray-400" />
+                          <FileText className="w-6 h-6 text-gray-400" />
                         </div>
                       )}
                       <div>
-                        <p className="text-sm font-medium text-white truncate max-w-xs">{course.title}</p>
+                        <p className="text-sm font-medium text-white truncate max-w-xs">{document.title}</p>
                         <p className="text-xs text-gray-400">
-                          {course.createdAt ? new Date(course.createdAt).toLocaleDateString('fr-FR') : '—'}
+                          {document.createdAt ? new Date(document.createdAt).toLocaleDateString('fr-FR') : '—'}
                         </p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-300">{course.category?.name || '—'}</td>
+                  <td className="px-6 py-4">
+                    <div className="flex flex-wrap gap-1">
+                      {document.categories?.length ? (
+                        document.categories.map(c => (
+                          <span key={c.id_category} className="px-2 py-1 text-xs bg-blue-400/20 text-blue-300 rounded-full">
+                            {c.name}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-xs text-gray-400">—</span>
+                      )}
+                    </div>
+                  </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-1 text-gray-300">
-                      <MousePointer className="w-4 h-4 text-yellow-400" />
-                      <span className="font-medium">{course.click_count}</span>
+                      <Download className="w-4 h-4 text-yellow-400" />
+                      <span className="font-medium">{document.download_count}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-wrap gap-1">
-                      {course.tags?.length ? (
-                        course.tags.map(t => (
+                      {document.tags?.length ? (
+                        document.tags.map(t => (
                           <span key={t.id_tag} className="px-2 py-1 text-xs bg-yellow-400/20 text-yellow-300 rounded-full flex items-center gap-1">
                             <Tag className="w-3 h-3" /> {t.name}
                           </span>
@@ -380,10 +434,10 @@ const AdminCourses: React.FC = () => {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <button onClick={() => openModal(course)} className="text-yellow-400 hover:text-yellow-300 transition-colors">
+                      <button onClick={() => openModal(document)} className="text-yellow-400 hover:text-yellow-300 transition-colors">
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button onClick={() => handleDelete(course.id_course)} className="text-red-400 hover:text-red-300 transition-colors">
+                      <button onClick={() => handleDelete(document.id_document)} className="text-red-400 hover:text-red-300 transition-colors">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -394,12 +448,12 @@ const AdminCourses: React.FC = () => {
           </table>
         </div>
 
-        {filteredCourses.length === 0 && (
+        {filteredDocuments.length === 0 && (
           <div className="text-center py-12">
-            <PlayCircle className="mx-auto h-12 w-12 text-gray-500" />
-            <h3 className="mt-2 text-sm font-medium text-gray-300">Aucun cours</h3>
+            <FileText className="mx-auto h-12 w-12 text-gray-500" />
+            <h3 className="mt-2 text-sm font-medium text-gray-300">Aucun document</h3>
             <p className="mt-1 text-sm text-gray-400">
-              {search || selectedCategory ? 'Aucun résultat.' : 'Créez votre premier cours.'}
+              {search || selectedCategory ? 'Aucun résultat.' : 'Créez votre premier document.'}
             </p>
           </div>
         )}
@@ -416,7 +470,7 @@ const AdminCourses: React.FC = () => {
           >
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-white">
-                {editingCourse ? 'Modifier le cours' : 'Nouveau cours'}
+                {editingDocument ? 'Modifier le document' : 'Nouveau document'}
               </h2>
               <button onClick={closeModal} className="text-gray-400 hover:text-white transition-colors">
                 <X className="w-6 h-6" />
@@ -468,33 +522,59 @@ const AdminCourses: React.FC = () => {
                 />
               </div>
 
-              {/* Lien YouTube */}
+              {/* Fichier document */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Lien YouTube *</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Fichier document {editingDocument ? '(optionnel pour modification)' : '*'}
+                </label>
                 <input
-                  type="url"
-                  value={formData.video_url}
-                  onChange={(e) => setFormData(prev => ({ ...prev, video_url: e.target.value }))}
-                  placeholder="https://youtube.com/..."
+                  type="file"
+                  accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx"
+                  onChange={handleDocumentChange}
+                  className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-yellow-400 file:text-black hover:file:bg-yellow-300"
+                  required={!editingDocument}
+                />
+                {formData.documentFile && (
+                  <p className="mt-2 text-sm text-gray-400">
+                    Fichier sélectionné: {formData.documentFile.name}
+                  </p>
+                )}
+              </div>
+
+              {/* Nom du fichier (optionnel, auto-rempli si vide) */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Nom du fichier (optionnel)</label>
+                <input
+                  type="text"
+                  value={formData.file_name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, file_name: e.target.value }))}
+                  placeholder="Laissé vide pour utiliser le nom du fichier uploadé"
                   className="w-full px-4 py-2 bg-slate-700 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400/50"
-                  required
                 />
               </div>
 
-              {/* Catégorie */}
+              {/* Catégories */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Catégorie *</label>
-                <select
-                  value={formData.id_category}
-                  onChange={(e) => setFormData(prev => ({ ...prev, id_category: e.target.value }))}
-                  className="w-full px-4 py-2 bg-slate-700 border border-white/10 rounded-lg text-white focus:outline-none focus:border-yellow-400/50"
-                  required
-                >
-                  <option value="">Sélectionner...</option>
-                  {categories.map(cat => (
-                    <option key={cat.id_category} value={cat.id_category}>{cat.name}</option>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Catégories</label>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {categories.map(category => (
+                    <label key={category.id_category} className="flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.categoryIds.includes(category.id_category)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setFormData(prev => ({ ...prev, categoryIds: [...prev.categoryIds, category.id_category] }));
+                          } else {
+                            setFormData(prev => ({ ...prev, categoryIds: prev.categoryIds.filter(id => id !== category.id_category) }));
+                          }
+                        }}
+                        className="mr-2 w-4 h-4 rounded bg-slate-700 border-white/10 text-yellow-400 focus:ring-yellow-400"
+                      />
+                      <span className="text-sm text-gray-300">{category.name}</span>
+                    </label>
                   ))}
-                </select>
+                </div>
                 {/* Ajouter nouvelle catégorie */}
                 <div className="mt-3 flex gap-2">
                   <input
@@ -575,7 +655,7 @@ const AdminCourses: React.FC = () => {
                       Enregistrement...
                     </>
                   ) : (
-                    editingCourse ? 'Mettre à jour' : 'Créer'
+                    editingDocument ? 'Mettre à jour' : 'Créer'
                   )}
                 </button>
               </div>
@@ -587,4 +667,4 @@ const AdminCourses: React.FC = () => {
   );
 };
 
-export default AdminCourses;
+export default AdminDocuments;
