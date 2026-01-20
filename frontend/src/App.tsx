@@ -1,0 +1,82 @@
+import { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import Navigation from './components/layout/Navigation';
+import Footer from './components/layout/Footer';
+import GlobalLoader from './components/common/GlobalLoader';
+import { ThemeProvider } from './contexts/ThemeContext';
+import Home from './pages/Home';
+import About from './pages/About';
+import Accompagnement from './pages/Accompagnement';
+import AdminLogin from './pages/AdminLogin';
+import AdminRoutes from './pages/admin';
+import ComingSoon from './pages/ComingSoon';
+import NotFound from './pages/NotFound';
+
+function AppContent() {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
+  // Scroll to top on route change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [location.pathname]);
+
+  return (
+    <>
+      {!isAdminRoute && <Navigation />}
+      
+      <motion.main
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/a-propos" element={<About />} />
+          <Route path="/accompagnement" element={<Accompagnement />} />
+          <Route path="/ressources" element={<ComingSoon />} />
+          <Route path="/ressources/*" element={<ComingSoon />} />
+          <Route path="/evenements" element={<ComingSoon />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/*" element={<AdminRoutes />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </motion.main>
+
+      {!isAdminRoute && <Footer />}
+    </>
+  );
+}
+
+function App() {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Simuler le chargement initial
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+      <ThemeProvider>
+        <Router>
+          <GlobalLoader
+            isLoading={isLoading}
+            message="Chargement de LesCracks..."
+          />
+          
+          {!isLoading && (
+            <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
+              <AppContent />
+            </div>
+          )}
+        </Router>
+      </ThemeProvider>
+  );
+}
+
+export default App;
