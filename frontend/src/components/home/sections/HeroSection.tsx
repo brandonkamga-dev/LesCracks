@@ -50,7 +50,7 @@ const HeroSection = () => {
             {/* Bouton secondaire */}
             <Link
               to="/ressources"
-              className="px-10 py-4 bg-white/10 backdrop-blur-md border-2 border-[var(--primary)] text-white text-lg font-medium rounded-2xl transition-all duration-300 flex items-center gap-3 hover:scale-105"
+              className="px-10 py-4 bg-white/10 backdrop-blur-md border-2  border-primary-blue hover:border-primary-yellow text-white text-lg font-medium rounded-2xl transition-all duration-300 flex items-center gap-3 hover:scale-105"
             >
               <Library className="w-6 h-6" />
               Explorer nos ressources

@@ -118,7 +118,7 @@ const ProgrammesSection = () => {
                 jusqu’à ton insertion professionnelle.
               </p>
 
-              <p className="mb-4 text-primary-blue/90 font-semibold">
+              <p className="mb-4 text-primary-yellow/90 font-semibold">
                 Inclus en plus de la formation technique :
               </p>
 
@@ -149,7 +149,7 @@ const ProgrammesSection = () => {
         <div className="text-center mt-16">
           <Link
             to="/accompagnement"
-            className="inline-flex items-center gap-3 text-primary-blue/90 hover:text-primary-yellow font-semibold text-lg transition-all"
+            className="inline-flex items-center gap-3 text-primary-yellow/90 hover:text-primary-yellow font-semibold text-lg transition-all"
           >
             Voir le détail des 2 programmes
             <ArrowRight className="w-6 h-6" />
